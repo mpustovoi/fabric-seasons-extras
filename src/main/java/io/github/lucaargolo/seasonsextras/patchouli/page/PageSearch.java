@@ -6,7 +6,7 @@ import io.github.lucaargolo.seasonsextras.patchouli.mixin.MinecraftClientAccesso
 import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
@@ -40,21 +40,20 @@ public abstract class PageSearch extends PageText implements Tickable {
     private boolean draggingScroll = false;
 
     @Override
-    public void render(MatrixStack ms, int mouseX, int mouseY, float pticks) {
+    public void render(DrawContext graphics, int mouseX, int mouseY, float pticks) {
 
-        super.render(ms, mouseX, mouseY, pticks);
-        RenderSystem.setShaderTexture(0, parent.getBookTexture());
-        DrawableHelper.drawTexture(ms, 6, 135, 140f, 183f, 99, 14, 512, 256);
-        textRender.render(ms, mouseX, mouseY);
+        super.render(graphics, mouseX, mouseY, pticks);
+        graphics.drawTexture(parent.getBookTexture(), 6, 135, 140f, 183f, 99, 14, 512, 256);
+        textRender.render(graphics, mouseX, mouseY);
         RenderSystem.setShaderTexture(0, parent.getBookTexture());
         if(scrollable) {
             int mx = mouseX-parent.bookLeft;
             int my = mouseY-parent.bookTop;
             double offset = MathHelper.lerp(scrollableOffset/excessHeight, 12, 104);
-            DrawableHelper.drawTexture(ms, 99, 11, 352f, 56f, 8, 115, 512, 256);
-            DrawableHelper.drawTexture(ms, 100, (int) offset, 360f, 56f, 6, 21, 512, 256);
+            graphics.drawTexture(parent.getBookTexture(), 99, 11, 352f, 56f, 8, 115, 512, 256);
+            graphics.drawTexture(parent.getBookTexture(), 100, (int) offset, 360f, 56f, 6, 21, 512, 256);
             if(mx > 100 && mx < 106 && my > offset && my < offset+21) {
-                DrawableHelper.fill(ms, 100, (int) offset, 106, (int) offset + 21, -2130706433);
+                graphics.fill(100, (int) offset, 106, (int) offset + 21, -2130706433);
             }
         }
     }

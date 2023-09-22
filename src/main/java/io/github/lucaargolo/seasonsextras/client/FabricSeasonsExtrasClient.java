@@ -4,6 +4,7 @@ import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import io.github.lucaargolo.seasonsextras.block.GreenhouseGlassBlock;
 import io.github.lucaargolo.seasonsextras.client.screen.AirConditioningScreen;
+import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouliCompatClient;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import io.github.lucaargolo.seasonsextras.utils.TooltipRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -48,6 +49,7 @@ public class FabricSeasonsExtrasClient implements ClientModInitializer {
                 testedTooltip.addAll(receivedTooltip);
             });
         });
+        
         ModelPredicateProviderRegistry.register(FabricSeasonsExtras.SEASON_CALENDAR_ITEM, new Identifier("season"), (itemStack, clientWorld, livingEntity, seed) -> {
             Entity entity = livingEntity != null ? livingEntity : itemStack.getHolder();
             if (entity == null) {
@@ -90,6 +92,7 @@ public class FabricSeasonsExtrasClient implements ClientModInitializer {
             MinecraftClient client = MinecraftClient.getInstance();
             TooltipRenderer.render(client, drawContext, tickDelta);
         }));
+        FabricSeasonsExtrasPatchouliCompatClient.onInitializeClient();
     }
 
     //I don't know what this is but it kind of works

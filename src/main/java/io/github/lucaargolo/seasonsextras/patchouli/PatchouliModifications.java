@@ -22,6 +22,9 @@ public class PatchouliModifications {
 
     public static void applyEntries(Identifier id, JsonArray pages) {
         List<Pair<Identifier, PatchouliEntryModification>> modifications = entryModifications.get(id);
+        System.out.println(id);
+        System.out.println(modifications);
+        System.out.println(entryModifications);
         if(modifications != null) {
             for(Pair<Identifier, PatchouliEntryModification> m : modifications) {
                 Identifier modId = m.getLeft();
@@ -48,9 +51,12 @@ public class PatchouliModifications {
             }
         }
         if(found) {
+            System.out.println("FOUND PAGE:"+i);
             modification.call(pages, i);
             applyEntry(pages, modId, modification);
         }
+        else
+            System.out.println("NOT FOUND PAGE!");
     }
 
 
