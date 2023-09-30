@@ -35,7 +35,7 @@ public class SeasonDetectorBlock extends DaylightDetectorBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? null : checkType(type, FabricSeasonsExtras.SEASON_DETECTOR_TYPE, SeasonDetectorBlockEntity::serverTick);
+        return world.isClient ? null : validateTicker(type, FabricSeasonsExtras.SEASON_DETECTOR_TYPE, SeasonDetectorBlockEntity::serverTick);
     }
 
     public static void updateState(BlockState state, World world, BlockPos pos) {

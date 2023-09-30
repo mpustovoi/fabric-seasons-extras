@@ -139,7 +139,7 @@ public class AirConditioningBlock extends BlockWithEntity {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return checkType(type, FabricSeasonsExtras.AIR_CONDITIONING_TYPE, world.isClient ? AirConditioningBlockEntity::clientTick : AirConditioningBlockEntity::serverTick);
+        return validateTicker(type, FabricSeasonsExtras.AIR_CONDITIONING_TYPE, world.isClient ? AirConditioningBlockEntity::clientTick : AirConditioningBlockEntity::serverTick);
     }
 
     @Override
