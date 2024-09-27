@@ -277,6 +277,9 @@ public class FakeStructureWorldAccess implements StructureWorldAccess {
         }else if(pos.getY() == 99) {
             return this.testing.getGround();
         }
+        else if(pos.getY() < 99) {
+            return Blocks.BEDROCK.getDefaultState();
+        }
         return Blocks.AIR.getDefaultState();
     }
 

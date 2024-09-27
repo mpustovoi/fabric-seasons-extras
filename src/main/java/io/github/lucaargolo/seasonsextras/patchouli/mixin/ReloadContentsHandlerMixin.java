@@ -1,6 +1,6 @@
 package io.github.lucaargolo.seasonsextras.patchouli.mixin;
 
-import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
+import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouliCompat;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +13,7 @@ public class ReloadContentsHandlerMixin {
 
     @Inject(at = @At("HEAD"), method = "dataReloaded")
     private static void syncBookBiomes(MinecraftServer server, CallbackInfo ci) {
-        FabricSeasonsExtras.sendValidBiomes(server, null);
+        FabricSeasonsExtrasPatchouliCompat.sendValidBiomes(server, null);
     }
 
 }
