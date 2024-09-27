@@ -1,7 +1,7 @@
 package io.github.lucaargolo.seasonsextras.patchouli;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;

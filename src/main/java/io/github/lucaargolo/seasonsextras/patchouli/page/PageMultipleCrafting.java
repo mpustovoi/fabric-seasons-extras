@@ -3,7 +3,6 @@ package io.github.lucaargolo.seasonsextras.patchouli.page;
 import com.google.gson.annotations.SerializedName;
 import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;

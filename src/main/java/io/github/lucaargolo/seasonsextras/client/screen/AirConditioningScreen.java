@@ -3,7 +3,7 @@ package io.github.lucaargolo.seasonsextras.client.screen;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.utils.Season;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
-import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity.*;
+import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity.BurnSlot;
 import io.github.lucaargolo.seasonsextras.screenhandlers.AirConditioningScreenHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;

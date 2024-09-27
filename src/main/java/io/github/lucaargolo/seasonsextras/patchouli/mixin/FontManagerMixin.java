@@ -16,7 +16,7 @@ import java.util.Map;
 @Mixin(FontManager.class)
 public class FontManagerMixin implements FontManagerMixed {
 
-    @Shadow @Final Map<Identifier, FontStorage> fontStorages;
+    @Shadow @Final private Map<Identifier, FontStorage> fontStorages;
 
     @Shadow private Map<Identifier, Identifier> idOverrides;
 

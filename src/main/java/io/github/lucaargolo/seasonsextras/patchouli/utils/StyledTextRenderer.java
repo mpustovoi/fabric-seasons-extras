@@ -3,15 +3,12 @@ package io.github.lucaargolo.seasonsextras.patchouli.utils;
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix4f;
 
 import java.util.function.Function;
-
-import org.joml.Matrix4f;
 
 public class StyledTextRenderer extends TextRenderer {
 

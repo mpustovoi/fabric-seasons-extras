@@ -2,18 +2,19 @@ package io.github.lucaargolo.seasonsextras.patchouli.page;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lucaargolo.seasonsextras.patchouli.mixed.FontManagerMixed;
+import io.github.lucaargolo.seasonsextras.patchouli.mixin.DrawContextAccessor;
 import io.github.lucaargolo.seasonsextras.patchouli.mixin.MinecraftClientAccessor;
 import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 import vazkii.patchouli.client.book.gui.BookTextRenderer;
 import vazkii.patchouli.client.book.gui.GuiBook;
 import vazkii.patchouli.client.book.gui.GuiBookEntry;
@@ -63,7 +64,24 @@ public abstract class PageSearch extends PageText implements Tickable {
         super.onDisplayed(parent, left, top);
         textRender = new BookTextRenderer(parent, text.as(Text.class), 0, 12);
         TextRenderer fontRenderer = ((FontManagerMixed) ((MinecraftClientAccessor) MinecraftClient.getInstance()).getFontManager()).createStyledTextRenderer(book.getFontStyle());
-        searchBar = new TextFieldWidget(fontRenderer, parent.bookLeft+left+21, parent.bookTop+top+136, 115, 10, Text.literal(""));
+        searchBar = new TextFieldWidget(fontRenderer, parent.bookLeft+left+21, parent.bookTop+top+136, 115, 10, Text.literal("")) {
+            @Override
+            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                DrawContextAccessor accessor = (DrawContextAccessor) context;
+                DrawContext noShadowContext = new DrawContext(accessor.getClient(), accessor.getVertexConsumers()) {
+                    @Override
+                    public int drawText(TextRenderer textRenderer, @Nullable String text, int x, int y, int color, boolean shadow) {
+                        return super.drawText(textRenderer, text, x, y, color, false);
+                    }
+                    @Override
+                    public int drawText(TextRenderer textRenderer, OrderedText text, int x, int y, int color, boolean shadow) {
+                        return super.drawText(textRenderer, text, x, y, color, false);
+                    }
+                };
+                ((DrawContextAccessor) noShadowContext).setMatrices(context.getMatrices());
+                super.renderButton(noShadowContext, mouseX, mouseY, delta);
+            }
+        };
         searchBar.setEditableColor(0);
         searchBar.setDrawsBackground(false);
         searchBar.setChangedListener(this::updateText);
@@ -130,7 +148,12 @@ public abstract class PageSearch extends PageText implements Tickable {
                 updateTextHeight();
             }
         }
-        return textRender.click(mouseX, mouseY, mouseButton);
+        if(textRender.click(mouseX, mouseY, mouseButton)) {
+            return true;
+        }else{
+            parent.setFocused(null);
+            return false;
+        }
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
@@ -174,6 +197,7 @@ public abstract class PageSearch extends PageText implements Tickable {
     @Override
     public void onHidden(GuiBookEntry parent) {
         super.onHidden(parent);
+        parent.setFocused(null);
         parent.removeDrawablesIf(d -> d.equals(searchBar));
         searchBar = null;
     }

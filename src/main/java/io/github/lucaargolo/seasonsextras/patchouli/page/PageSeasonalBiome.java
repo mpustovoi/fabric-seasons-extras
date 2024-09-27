@@ -9,7 +9,6 @@ import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvents;
@@ -76,16 +75,12 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
         int my = mouseY-parent.bookTop;
         if(mx > 6 && mx < 6+23 && my > 115 && my < 115+23) {
             parent.setTooltip(Text.translatable(Season.SPRING.getTranslationKey()).formatted(Season.SPRING.getFormatting()));
-            parent.renderWithTooltip(graphics, mx, my, 0);
         }else if(mx > 33 && mx < 33+23 && my > 115 && my < 115+23) {
             parent.setTooltip(Text.translatable(Season.SUMMER.getTranslationKey()).formatted(Season.SUMMER.getFormatting()));
-            parent.renderWithTooltip(graphics, mx, my, 0);
         }else if(mx > 60 && mx < 60+23 && my > 115 && my < 115+23) {
             parent.setTooltip(Text.translatable(Season.FALL.getTranslationKey()).formatted(Season.FALL.getFormatting()));
-            parent.renderWithTooltip(graphics, mx, my, 0);
         }else if(mx > 87 && mx < 87+23 && my > 115 && my < 115+23) {
             parent.setTooltip(Text.translatable(Season.WINTER.getTranslationKey()).formatted(Season.WINTER.getFormatting()));
-            parent.renderWithTooltip(graphics, mx, my, 0);
         }
 
     }

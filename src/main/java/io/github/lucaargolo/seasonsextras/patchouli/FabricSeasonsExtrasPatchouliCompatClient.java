@@ -20,7 +20,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
@@ -145,11 +144,10 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
         Identifier biomeId = entry.getKey().orElse(RegistryKey.of(RegistryKeys.BIOME, new Identifier("plains"))).getValue();
 
         String biomeName = biomeId.toTranslationKey("biome");
-        boolean isJungle = entry.isIn(BiomeTags.IS_JUNGLE) || entry.isIn(BiomeTags.HAS_CLOSER_WATER_FOG);
-        Pair<Boolean, Float> springPair = FabricSeasons.getSeasonWeather(Season.SPRING, biomeId, isJungle, biome.hasPrecipitation(),biome.getTemperature());
-        Pair<Boolean, Float> summerPair = FabricSeasons.getSeasonWeather(Season.SUMMER, biomeId, isJungle, biome.hasPrecipitation(),biome.getTemperature());
-        Pair<Boolean, Float> fallPair = FabricSeasons.getSeasonWeather(Season.FALL, biomeId, isJungle, biome.hasPrecipitation(),biome.getTemperature());
-        Pair<Boolean, Float> winterPair = FabricSeasons.getSeasonWeather(Season.WINTER, biomeId, isJungle, biome.hasPrecipitation(),biome.getTemperature());
+        Pair<Boolean, Float> springPair = FabricSeasons.getSeasonWeather(Season.SPRING, biomeId, biome.hasPrecipitation(),biome.getTemperature());
+        Pair<Boolean, Float> summerPair = FabricSeasons.getSeasonWeather(Season.SUMMER, biomeId, biome.hasPrecipitation(),biome.getTemperature());
+        Pair<Boolean, Float> fallPair = FabricSeasons.getSeasonWeather(Season.FALL, biomeId, biome.hasPrecipitation(),biome.getTemperature());
+        Pair<Boolean, Float> winterPair = FabricSeasons.getSeasonWeather(Season.WINTER, biomeId, biome.hasPrecipitation(),biome.getTemperature());
 
         List<Season> rainSeasons = new ArrayList<>();
         List<Season> snowSeasons = new ArrayList<>();
@@ -206,9 +204,7 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
         }
 
         String biomeInfo;
-        if(isJungle) {
-            biomeInfo = "$(seasonsextrastranslate:patchouli.seasonsextras.thisisabiome)"+" $(2)"+"$(seasonsextrastranslate:patchouli.seasonsextras.tropicalbiome)"+"$(0). "+"$(seasonsextrastranslate:patchouli.seasonsextras.tropicaldesc)";
-        }else if(springPair.getRight() <= 0.1) {
+        if(springPair.getRight() <= 0.1) {
             biomeInfo = "$(seasonsextrastranslate:patchouli.seasonsextras.thisisabiome)"+" $(3)"+"$(seasonsextrastranslate:patchouli.seasonsextras.frozenbiome)"+"$(0). "+"$(seasonsextrastranslate:patchouli.seasonsextras.frozendesc)";
         }else if(springPair.getRight() <= 0.3) {
             biomeInfo = "$(seasonsextrastranslate:patchouli.seasonsextras.thisisabiome)"+" $(3)"+"$(seasonsextrastranslate:patchouli.seasonsextras.coldbiome)"+"$(0). "+"$(seasonsextrastranslate:patchouli.seasonsextras.colddesc)";

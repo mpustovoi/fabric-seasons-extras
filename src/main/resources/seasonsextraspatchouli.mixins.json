@@ -10,12 +10,14 @@
   "client": [
     "AbstractMultiblockMixin",
     "BookContentsBuilderMixin",
+    "DrawContextAccessor",
     "FabricSeasonsMixin",
     "FontManagerMixin",
     "GuiBookAccessor",
     "GuiBookEntryAccessor",
     "GuiBookEntryMixin",
     "GuiBookLandingMixin",
+    "GuiBookMixin",
     "MinecraftClientAccessor",
     "MouseMixin",
     "PageMultiblockAccessor"

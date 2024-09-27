@@ -1,9 +1,7 @@
 package io.github.lucaargolo.seasonsextras.patchouli.page;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lucaargolo.seasonsextras.client.FabricSeasonsExtrasClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import vazkii.patchouli.client.book.gui.BookTextRenderer;
 import vazkii.patchouli.client.book.gui.GuiBookEntry;
@@ -23,7 +21,6 @@ public class PageBiomeDescription extends PageText {
         if(mx > -28 && mx < -28+13 && my > 0 && my < 10) {
             graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+14f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
             parent.setTooltip(FabricSeasonsExtrasClient.prefersCelsius ? Text.translatable("patchouli.seasonsextras.changetofahrenheit") : Text.translatable("patchouli.seasonsextras.changetocelsius"));
-            parent.renderWithTooltip(graphics, mx, my, 0);
         }
     }
 

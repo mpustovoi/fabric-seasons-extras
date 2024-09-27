@@ -24,7 +24,6 @@ public class BookContentsBuilderMixin {
 
     @Inject(at = @At(value = "INVOKE", target="Lvazkii/patchouli/client/book/BookEntry;<init>(Lcom/google/gson/JsonObject;Lnet/minecraft/util/Identifier;Lvazkii/patchouli/common/book/Book;Ljava/lang/String;)V", remap = true), method = "loadEntry", locals = LocalCapture.CAPTURE_FAILSOFT)
     private static void injectPagesAtLoad(Book book, BookContentLoader loader, Identifier id, Identifier file, Function<Identifier, BookCategory> categories, CallbackInfoReturnable<@Nullable BookEntry> cir, BookContentLoader.LoadResult result) {
-        System.out.print("CUDDLETHEIF LOG:");
         if(result.json().isJsonObject()) {
             JsonObject object = result.json().getAsJsonObject();
             JsonElement element = object.get("pages");
@@ -33,7 +32,6 @@ public class BookContentsBuilderMixin {
                 PatchouliModifications.applyEntries(id, pages);
             }
         }
-        System.out.println();
     }
 
 }
