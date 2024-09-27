@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +61,7 @@ public class GuiBookLandingMixin extends GuiBook {
             dummyJson.add("icon", new JsonPrimitive("minecraft:air"));
             dummyJson.add("pages", new JsonArray());
             dummyJson.add("read_by_default", new JsonPrimitive(true));
-            dummyEntry = new BookEntry(dummyJson, new Identifier(""), capturedBook);
+            dummyEntry = new BookEntry(dummyJson, new Identifier(""), capturedBook, null);
         }
     }
 
@@ -164,18 +164,19 @@ public class GuiBookLandingMixin extends GuiBook {
             }
         }
     }
-    @Inject(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/GuiBookLanding;drawFromTexture(Lnet/minecraft/client/util/math/MatrixStack;Lvazkii/patchouli/common/book/Book;IIIIII)V", remap = true), method = "drawHeader", cancellable = true)
-    public void drawExtraHeaders(MatrixStack ms, CallbackInfo ci) {
+    
+    @Inject(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/GuiBookLanding;drawFromTexture(Lnet/minecraft/client/gui/DrawContext;Lvazkii/patchouli/common/book/Book;IIIIII)V", remap = true), method = "drawHeader", cancellable = true)
+    public void drawExtraHeaders(DrawContext graphics, CallbackInfo ci) {
         if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
             if (spread == 0) {
                 int color = book.nameplateColor;
-                drawFromTexture(ms, book, 272 - 132, 12, 0, 211, 140, 31);
-                textRenderer.draw(ms, Text.translatable("patchouli.seasonsextras.modifications"), 272 - 132 + 21, 16, color);
-                textRenderer.draw(ms, Text.translatable("patchouli.seasonsextras.modifications_info").fillStyle(book.getFontStyle()), 272 - 132 + 21, 24, color);
+                drawFromTexture(graphics, book, 272 - 132, 12, 0, 211, 140, 31);
+                graphics.drawText(textRenderer, Text.translatable("patchouli.seasonsextras.modifications"), 272 - 132 + 21, 16, color, true);
+                graphics.drawText(textRenderer, Text.translatable("patchouli.seasonsextras.modifications_info").fillStyle(book.getFontStyle()), 272 - 132 + 21, 24, color, true);
                 int cropOffset = FabricSeasons.CONFIG.isSeasonMessingCrops() ? 0 : -10;
-                drawFromTexture(ms, book, 272 - 132, 69+cropOffset, 0, 211, 140, 31);
-                textRenderer.draw(ms, Text.translatable("patchouli.seasonsextras.resources"), 272 - 132 + 21, 73+cropOffset, color);
-                textRenderer.draw(ms, Text.translatable("patchouli.seasonsextras.resources_info").fillStyle(book.getFontStyle()), 272 - 132 + 21, 81+cropOffset, color);
+                drawFromTexture(graphics, book, 272 - 132, 69+cropOffset, 0, 211, 140, 31);
+                graphics.drawText(textRenderer, Text.translatable("patchouli.seasonsextras.resources"), 272 - 132 + 21, 73+cropOffset, color, true);
+                graphics.drawText(textRenderer, Text.translatable("patchouli.seasonsextras.resources_info").fillStyle(book.getFontStyle()), 272 - 132 + 21, 81+cropOffset, color, true);
             } else {
                 ci.cancel();
             }

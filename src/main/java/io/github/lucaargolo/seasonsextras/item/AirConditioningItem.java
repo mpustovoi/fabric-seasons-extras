@@ -4,11 +4,9 @@ import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.block.AirConditioningBlock;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 

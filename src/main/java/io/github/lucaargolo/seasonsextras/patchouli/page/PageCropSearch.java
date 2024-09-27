@@ -6,7 +6,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import vazkii.patchouli.client.book.gui.GuiBookEntry;
 
-import java.util.Comparator;
 import java.util.Map;
 
 public class PageCropSearch extends PageSearch {

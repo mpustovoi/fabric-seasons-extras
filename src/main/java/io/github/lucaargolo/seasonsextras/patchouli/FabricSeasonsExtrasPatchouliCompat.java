@@ -1,56 +1,34 @@
 package io.github.lucaargolo.seasonsextras.patchouli;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import io.github.lucaargolo.seasons.FabricSeasons;
-import io.github.lucaargolo.seasons.resources.CropConfigs;
-import io.github.lucaargolo.seasons.utils.Season;
-import io.github.lucaargolo.seasonsextras.client.FabricSeasonsExtrasClient;
-import io.github.lucaargolo.seasonsextras.patchouli.mixin.GuiBookEntryAccessor;
-import io.github.lucaargolo.seasonsextras.patchouli.page.*;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
-import io.github.lucaargolo.seasonsextras.utils.Tickable;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.item.Item;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.PlacedFeature;
 import net.minecraft.world.gen.feature.TreeFeature;
 import org.jetbrains.annotations.Nullable;
-import vazkii.patchouli.client.book.ClientBookRegistry;
-import vazkii.patchouli.client.book.text.BookTextParser;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class FabricSeasonsExtrasPatchouliCompat implements ModInitializer {
+public class FabricSeasonsExtrasPatchouliCompat {
 
     private static final HashMap<Identifier, JsonObject> multiblockCache = new HashMap<>();
 
@@ -58,8 +36,7 @@ public class FabricSeasonsExtrasPatchouliCompat implements ModInitializer {
     public static ModIdentifier SEND_BIOME_MULTIBLOCKS_S2C = new ModIdentifier("send_biome_multiblocks_s2c");
     public static ModIdentifier SEND_MULTIBLOCKS_S2C = new ModIdentifier("send_multiblocks_s2c");
 
-    @Override
-    public void onInitialize() {
+    public static void onInitialize() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             sendValidBiomes(server, handler.player);
         });

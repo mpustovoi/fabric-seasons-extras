@@ -1,9 +1,7 @@
 package io.github.lucaargolo.seasonsextras.patchouli.page;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lucaargolo.seasonsextras.client.FabricSeasonsExtrasClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import vazkii.patchouli.client.book.gui.BookTextRenderer;
 import vazkii.patchouli.client.book.gui.GuiBookEntry;
@@ -14,16 +12,15 @@ public class PageBiomeDescription extends PageText {
     private transient BookTextRenderer textRender;
 
     @Override
-    public void render(MatrixStack ms, int mouseX, int mouseY, float pticks) {
-        super.render(ms, mouseX, mouseY, pticks);
-        textRender.render(ms, mouseX, mouseY);
-        RenderSystem.setShaderTexture(0, parent.getBookTexture());
+    public void render(DrawContext graphics, int mouseX, int mouseY, float pticks) {
+        super.render(graphics, mouseX, mouseY, pticks);
+        textRender.render(graphics, mouseX, mouseY);
         int mx = mouseX-parent.bookLeft;
         int my = mouseY-parent.bookTop;
-        DrawableHelper.drawTexture(ms, -28, 0, 352f+27f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
+        graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+27f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
         if(mx > -28 && mx < -28+13 && my > 0 && my < 10) {
-            DrawableHelper.drawTexture(ms, -28, 0, 352f+14f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
-            parent.renderTooltip(ms, FabricSeasonsExtrasClient.prefersCelsius ? Text.translatable("patchouli.seasonsextras.changetofahrenheit") : Text.translatable("patchouli.seasonsextras.changetocelsius"), mx, my);
+            graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+14f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
+            parent.setTooltip(FabricSeasonsExtrasClient.prefersCelsius ? Text.translatable("patchouli.seasonsextras.changetofahrenheit") : Text.translatable("patchouli.seasonsextras.changetocelsius"));
         }
     }
 

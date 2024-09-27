@@ -5,9 +5,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 public class SlotSimpleInventory implements Inventory {
 
     private final SimpleInventory inventory;

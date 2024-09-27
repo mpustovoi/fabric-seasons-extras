@@ -1,6 +1,5 @@
 package io.github.lucaargolo.seasonsextras;
 
-import com.google.gson.JsonObject;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.block.AirConditioningBlock;
 import io.github.lucaargolo.seasonsextras.block.GreenhouseGlassBlock;
@@ -12,6 +11,7 @@ import io.github.lucaargolo.seasonsextras.blockentities.GreenhouseGlassBlockEnti
 import io.github.lucaargolo.seasonsextras.blockentities.SeasonCalendarBlockEntity;
 import io.github.lucaargolo.seasonsextras.blockentities.SeasonDetectorBlockEntity;
 import io.github.lucaargolo.seasonsextras.item.*;
+import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouliCompat;
 import io.github.lucaargolo.seasonsextras.screenhandlers.AirConditioningScreenHandler;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import net.fabricmc.api.ModInitializer;
@@ -31,18 +31,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -129,6 +126,8 @@ public class FabricSeasonsExtras implements ModInitializer {
 
         addToTab(i -> FabricLoader.getInstance().isModLoaded("patchouli"), Registry.register(Registries.ITEM, SEASONAL_COMPENDIUM_ITEM_ID, new SeasonalCompendiumItem(new Item.Settings())));
         addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier("crop_season_tester"), new CropSeasonTesterItem(new Item.Settings())));
+
+        FabricSeasonsExtrasPatchouliCompat.onInitialize();
 
         ServerPlayNetworking.registerGlobalReceiver(SEND_MODULE_PRESS_C2S, (server, player, handler, buf, sender) -> {
             int button = buf.readInt();

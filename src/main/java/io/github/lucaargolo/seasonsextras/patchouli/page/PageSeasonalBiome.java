@@ -7,14 +7,14 @@ import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouli
 import io.github.lucaargolo.seasonsextras.patchouli.mixin.PageMultiblockAccessor;
 import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import vazkii.patchouli.client.book.BookContentsBuilder;
 import vazkii.patchouli.client.book.BookEntry;
 import vazkii.patchouli.client.book.page.PageMultiblock;
@@ -37,7 +37,7 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
 
 
     @Override
-    public void build(BookEntry entry, BookContentsBuilder builder, int pageNum) {
+    public void build(World level, BookEntry entry, BookContentsBuilder builder, int pageNum) {
         PageMultiblockAccessor accessor = (PageMultiblockAccessor) this;
         if(serializedMultiblocks != null && serializedMultiblocks.length > 0) {
             accessor.setSerializedMultiblock(serializedMultiblocks[0]);
@@ -45,11 +45,11 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
                 multiblockObjs.add(serializedMultiblock.toMultiblock());
             }
         }
-        super.build(entry, builder, pageNum);
+        super.build(level, entry, builder, pageNum);
     }
 
     @Override
-    public void render(MatrixStack ms, int mouseX, int mouseY, float pticks) {
+    public void render(DrawContext graphics, int mouseX, int mouseY, float pticks) {
         if(serializedMultiblocks != null) {
             PageMultiblockAccessor accessor = (PageMultiblockAccessor) this;
             int newIndex = (age/40) % serializedMultiblocks.length;
@@ -63,24 +63,24 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
         if(biomeId != null) {
             FabricSeasonsExtrasPatchouliCompatClient.multiblockBiomeOverride = RegistryKey.of(RegistryKeys.BIOME, biomeId);
         }
-        super.render(ms, mouseX, mouseY, pticks);
+        super.render(graphics, mouseX, mouseY, pticks);
         FabricSeasonsExtrasPatchouliCompatClient.multiblockBiomeOverride = null;
         FabricSeasonsExtrasPatchouliCompatClient.multiblockSeasonOverride = null;
         RenderSystem.setShaderTexture(0, parent.getBookTexture());
-        DrawableHelper.drawTexture(ms, 6, 115, 23, 23, 352, selectedSeason == Season.SPRING ? 0 : 28, 28, 28, 512, 256);
-        DrawableHelper.drawTexture(ms, 33, 115, 23, 23, 380, selectedSeason == Season.SUMMER ? 0 : 28, 28, 28, 512, 256);
-        DrawableHelper.drawTexture(ms, 60, 115, 23, 23, 408, selectedSeason == Season.FALL ? 0 : 28, 28, 28, 512, 256);
-        DrawableHelper.drawTexture(ms, 87, 115, 23, 23, 436, selectedSeason == Season.WINTER ? 0 : 28, 28, 28, 512, 256);
+        graphics.drawTexture(parent.getBookTexture(), 6, 115, 23, 23, 352, selectedSeason == Season.SPRING ? 0 : 28, 28, 28, 512, 256);
+        graphics.drawTexture(parent.getBookTexture(), 33, 115, 23, 23, 380, selectedSeason == Season.SUMMER ? 0 : 28, 28, 28, 512, 256);
+        graphics.drawTexture(parent.getBookTexture(), 60, 115, 23, 23, 408, selectedSeason == Season.FALL ? 0 : 28, 28, 28, 512, 256);
+        graphics.drawTexture(parent.getBookTexture(), 87, 115, 23, 23, 436, selectedSeason == Season.WINTER ? 0 : 28, 28, 28, 512, 256);
         int mx = mouseX-parent.bookLeft;
         int my = mouseY-parent.bookTop;
         if(mx > 6 && mx < 6+23 && my > 115 && my < 115+23) {
-            parent.renderTooltip(ms, Text.translatable(Season.SPRING.getTranslationKey()).formatted(Season.SPRING.getFormatting()), mx, my);
+            parent.setTooltip(Text.translatable(Season.SPRING.getTranslationKey()).formatted(Season.SPRING.getFormatting()));
         }else if(mx > 33 && mx < 33+23 && my > 115 && my < 115+23) {
-            parent.renderTooltip(ms, Text.translatable(Season.SUMMER.getTranslationKey()).formatted(Season.SUMMER.getFormatting()), mx, my);
+            parent.setTooltip(Text.translatable(Season.SUMMER.getTranslationKey()).formatted(Season.SUMMER.getFormatting()));
         }else if(mx > 60 && mx < 60+23 && my > 115 && my < 115+23) {
-            parent.renderTooltip(ms, Text.translatable(Season.FALL.getTranslationKey()).formatted(Season.FALL.getFormatting()), mx, my);
+            parent.setTooltip(Text.translatable(Season.FALL.getTranslationKey()).formatted(Season.FALL.getFormatting()));
         }else if(mx > 87 && mx < 87+23 && my > 115 && my < 115+23) {
-            parent.renderTooltip(ms, Text.translatable(Season.WINTER.getTranslationKey()).formatted(Season.WINTER.getFormatting()), mx, my);
+            parent.setTooltip(Text.translatable(Season.WINTER.getTranslationKey()).formatted(Season.WINTER.getFormatting()));
         }
 
     }

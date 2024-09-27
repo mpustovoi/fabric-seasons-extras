@@ -2,11 +2,11 @@ package io.github.lucaargolo.seasonsextras.patchouli.utils;
 
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix4f;
 
 import java.util.function.Function;
 
@@ -19,14 +19,11 @@ public class StyledTextRenderer extends TextRenderer {
         this.style = style;
     }
 
-
     @Override
-    public int drawWithShadow(MatrixStack matrices, String text, float x, float y, int color) {
-        return super.draw(matrices, Text.literal(text).styled(s -> style), x, y, color);
-    }
-
-    @Override
-    public int drawWithShadow(MatrixStack matrices, OrderedText text, float x, float y, int color) {
-        return super.draw(matrices, text, x, y, color);
+    public int draw(String text, float x, float y, int color, boolean shadow, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextLayerType layerType, int backgroundColor, int light, boolean rightToLeft) {
+        if(shadow)
+            return super.draw(Text.literal(text).styled(s -> style), x, y, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light);
+        else
+            return super.draw(text, x, y, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light, rightToLeft);
     }
 }
