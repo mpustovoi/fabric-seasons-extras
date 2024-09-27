@@ -33,7 +33,7 @@ public class GreenhouseGlassBlock extends BlockWithEntity {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? null : checkType(type, FabricSeasonsExtras.GREENHOUSE_GLASS_TYPE, GreenhouseGlassBlockEntity::serverTick);
+        return world.isClient ? null : validateTicker(type, FabricSeasonsExtras.GREENHOUSE_GLASS_TYPE, GreenhouseGlassBlockEntity::serverTick);
     }
 
     @Override
