@@ -14,8 +14,14 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -24,19 +30,21 @@ public class AirConditioningScreenHandler extends ScreenHandler {
     private final PropertyDelegate propertyDelegate;
     private final ScreenHandlerContext context;
 
-    private final Block block;
+    private Block block;
 
     private final Inventory moduleInventory;
 
-    public AirConditioningScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, Block block) {
+    public AirConditioningScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, RegistryKey<Block> block) {
         this(syncId, playerInventory, context, block, new SimpleInventory(9), new SimpleInventory(3), new ArrayPropertyDelegate(12));
     }
 
-    public AirConditioningScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, Block block, Inventory inputInventory, Inventory moduleInventory, PropertyDelegate propertyDelegate) {
+    public AirConditioningScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, RegistryKey<Block> block, Inventory inputInventory, Inventory moduleInventory, PropertyDelegate propertyDelegate) {
         super(FabricSeasonsExtras.AIR_CONDITIONING_SCREEN_HANDLER, syncId);
         int i;
         this.context = context;
-        this.block = block;
+        context.run((world, pos) -> {
+            this.block = world.getRegistryManager().get(RegistryKeys.BLOCK).get(block);
+        });
         AbstractFurnaceScreenHandler.checkSize(inputInventory, 9);
         AbstractFurnaceScreenHandler.checkSize(moduleInventory, 3);
         AbstractFurnaceScreenHandler.checkDataCount(propertyDelegate, 12);
@@ -161,6 +169,10 @@ public class AirConditioningScreenHandler extends ScreenHandler {
             Conditioning conditioning = AirConditioningScreenHandler.this.getConditioning();
             return conditioning.getFilter().test(ItemVariant.of(stack));
         }
+    }
+
+    public record Data(BlockPos pos, RegistryKey<Block> block) {
+        public static final PacketCodec<RegistryByteBuf, Data> CODEC = PacketCodec.tuple(BlockPos.PACKET_CODEC, Data::pos, RegistryKey.createPacketCodec(RegistryKeys.BLOCK), Data::block, Data::new);
     }
 
 

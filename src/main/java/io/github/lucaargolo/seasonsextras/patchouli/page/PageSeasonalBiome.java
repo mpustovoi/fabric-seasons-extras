@@ -44,8 +44,8 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
             for (SerializedMultiblock serializedMultiblock : serializedMultiblocks) {
                 multiblockObjs.add(serializedMultiblock.toMultiblock());
             }
+            super.build(level, entry, builder, pageNum);
         }
-        super.build(level, entry, builder, pageNum);
     }
 
     @Override

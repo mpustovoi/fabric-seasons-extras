@@ -54,20 +54,20 @@ public class GuiBookLandingMixin extends GuiBook {
     @Inject(at = @At("TAIL"), method = "<init>")
     public void captureBook(Book book, CallbackInfo ci) {
         this.capturedBook = book;
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             JsonObject dummyJson = new JsonObject();
             dummyJson.add("name", new JsonPrimitive(""));
             dummyJson.add("category", new JsonPrimitive("seasonsextras:compendium"));
             dummyJson.add("icon", new JsonPrimitive("minecraft:air"));
             dummyJson.add("pages", new JsonArray());
             dummyJson.add("read_by_default", new JsonPrimitive(true));
-            dummyEntry = new BookEntry(dummyJson, new Identifier(""), capturedBook, null);
+            dummyEntry = new BookEntry(dummyJson, Identifier.of(""), capturedBook, null);
         }
     }
 
     @Inject(at = @At("TAIL"), method = "init", remap = true)
     public void captureText(CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             capuredText = text;
             if (spread != 0) {
                 text = null;
@@ -77,7 +77,7 @@ public class GuiBookLandingMixin extends GuiBook {
 
     @Inject(at = @At("HEAD"), method = "buildEntryButtons")
     public void addDummySpaces(CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             if(capturedEntriesInPamphlet == null) {
                 capturedEntriesInPamphlet = entriesInPamphlet;
             }
@@ -110,7 +110,7 @@ public class GuiBookLandingMixin extends GuiBook {
         int y = args.get(1);
         int start = args.get(2);
         int count = args.get(3);
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             if(spread == 0) {
                 args.set(1, y+3);
             }
@@ -121,7 +121,7 @@ public class GuiBookLandingMixin extends GuiBook {
 
     @Inject(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/button/GuiButtonEntry;<init>(Lvazkii/patchouli/client/book/gui/GuiBook;IILvazkii/patchouli/client/book/BookEntry;Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;)V", shift = At.Shift.BEFORE, remap = true), method = "addEntryButtons", locals = LocalCapture.CAPTURE_FAILSOFT)
     public void collectEntry(int x, int y, int start, int count, CallbackInfo ci, int i) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             if (spread != 0 && i-start < 13) {
                 entryX = bookLeft + LEFT_PAGE_X;
             }else{
@@ -132,7 +132,7 @@ public class GuiBookLandingMixin extends GuiBook {
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/button/GuiButtonEntry;<init>(Lvazkii/patchouli/client/book/gui/GuiBook;IILvazkii/patchouli/client/book/BookEntry;Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;)V", remap = true), method = "addEntryButtons", index = 1)
     public int fixEntryX(int x) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             return entryX;
         }else{
             return x;
@@ -141,7 +141,7 @@ public class GuiBookLandingMixin extends GuiBook {
 
     @Inject(at = @At("TAIL"), method = "addEntryButtons")
     public void fixDummySpaces(int x, int y, int start, int count, CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             removeDrawablesIf(drawable -> drawable instanceof GuiButtonEntry entry && entry.getEntry() == dummyEntry);
         }
     }
@@ -149,14 +149,14 @@ public class GuiBookLandingMixin extends GuiBook {
 
     @Inject(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/GuiBookLanding;addEntryButtons(IIII)V"), method = "buildEntryButtons")
     public void addPageButton(CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             maxSpreads = (int) Math.ceil((float) (13+entriesInPamphlet.size()) / (13 * 2));
         }
     }
 
     @Inject(at = @At("HEAD"), method = "onPageChanged")
     public void fixText(CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             if(spread == 0) {
                 text = capuredText;
             }else{
@@ -167,7 +167,7 @@ public class GuiBookLandingMixin extends GuiBook {
     
     @Inject(at = @At(value = "INVOKE", target = "Lvazkii/patchouli/client/book/gui/GuiBookLanding;drawFromTexture(Lnet/minecraft/client/gui/DrawContext;Lvazkii/patchouli/common/book/Book;IIIIII)V", remap = true), method = "drawHeader", cancellable = true)
     public void drawExtraHeaders(DrawContext graphics, CallbackInfo ci) {
-        if(capturedBook.id.equals(new ModIdentifier("seasonal_compendium"))) {
+        if(capturedBook.id.equals(ModIdentifier.of("seasonal_compendium"))) {
             if (spread == 0) {
                 int color = book.nameplateColor;
                 drawFromTexture(graphics, book, 272 - 132, 12, 0, 211, 140, 31);

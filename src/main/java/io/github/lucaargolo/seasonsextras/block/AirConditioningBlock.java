@@ -1,5 +1,7 @@
 package io.github.lucaargolo.seasonsextras.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity;
 import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity.Conditioning;
@@ -18,6 +20,10 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryElementCodec;
+import net.minecraft.registry.entry.RegistryEntryListCodec;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -38,11 +44,11 @@ import net.minecraft.world.World;
 
 import java.util.Optional;
 
-@SuppressWarnings("deprecation")
 public class AirConditioningBlock extends BlockWithEntity {
 
     public static final Property<Integer> LEVEL = IntProperty.of("level", 0, 3);
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+    public static final MapCodec<AirConditioningBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(Conditioning.CODEC.fieldOf("conditioning").forGetter(AirConditioningBlock::getConditioning), createSettingsCodec()).apply(instance, AirConditioningBlock::new));
 
     private final Conditioning conditioning;
 
@@ -82,19 +88,20 @@ public class AirConditioningBlock extends BlockWithEntity {
         super.onStateReplaced(state, world, pos, newState, moved);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if(world.isClient) {
             return ActionResult.SUCCESS;
         }else{
             Optional<AirConditioningBlockEntity> optional = world.getBlockEntity(pos, FabricSeasonsExtras.AIR_CONDITIONING_TYPE);
             if (optional.isPresent()) {
                 AirConditioningBlockEntity blockEntity = optional.get();
-                player.openHandledScreen(new ExtendedScreenHandlerFactory() {
+                RegistryKey<Block> blockKey = AirConditioningBlock.this.getRegistryEntry().registryKey();
+                player.openHandledScreen(new ExtendedScreenHandlerFactory<AirConditioningScreenHandler.Data>() {
                     @Override
-                    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-                        buf.writeBlockPos(pos);
-                        buf.writeRegistryValue(Registries.BLOCK, AirConditioningBlock.this);
+                    public AirConditioningScreenHandler.Data getScreenOpeningData(ServerPlayerEntity player) {
+                        return new AirConditioningScreenHandler.Data(pos, blockKey);
                     }
 
                     @Override
@@ -104,7 +111,7 @@ public class AirConditioningBlock extends BlockWithEntity {
 
                     @Override
                     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                        return new AirConditioningScreenHandler(syncId, inv, ScreenHandlerContext.create(player.getWorld(), pos), AirConditioningBlock.this, blockEntity.getInputInventory(), blockEntity.getModuleInventory(), blockEntity.getPropertyDelegate());
+                        return new AirConditioningScreenHandler(syncId, inv, ScreenHandlerContext.create(player.getWorld(), pos), blockKey, blockEntity.getInputInventory(), blockEntity.getModuleInventory(), blockEntity.getPropertyDelegate());
                     }
                 });
                 return ActionResult.CONSUME;
@@ -168,4 +175,8 @@ public class AirConditioningBlock extends BlockWithEntity {
         return BlockRenderType.MODEL;
     }
 
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
+    }
 }

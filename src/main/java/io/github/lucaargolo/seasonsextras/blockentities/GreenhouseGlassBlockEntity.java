@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 public class GreenhouseGlassBlockEntity extends BlockEntity {
     private GreenhouseCache.GreenHouseTicket ticket = null;
@@ -22,13 +23,7 @@ public class GreenhouseGlassBlockEntity extends BlockEntity {
     public static void serverTick(World world, BlockPos pos, BlockState state, GreenhouseGlassBlockEntity entity) {
         if(state.getBlock() instanceof GreenhouseGlassBlock greenhouseGlassBlock) {
             Season worldSeason = FabricSeasons.getCurrentSeason(world);
-            Season glassSeason = greenhouseGlassBlock.inverted ? Season.WINTER : Season.SUMMER;
-            switch (worldSeason) {
-                case SPRING -> glassSeason = greenhouseGlassBlock.inverted ? Season.FALL : glassSeason;
-                case SUMMER -> glassSeason = greenhouseGlassBlock.inverted ? Season.SPRING : glassSeason;
-                case FALL -> glassSeason = !greenhouseGlassBlock.inverted ? Season.SPRING : glassSeason;
-                case WINTER -> glassSeason = !greenhouseGlassBlock.inverted ? Season.FALL : glassSeason;
-            }
+            Season glassSeason = getGlassSeason(greenhouseGlassBlock, worldSeason);
             if (entity.ticket == null || entity.ticket.expired || !entity.ticket.seasons.contains(glassSeason)) {
                 BlockBox box = BlockBox.create(pos.withY(Integer.MIN_VALUE), pos);
                 entity.ticket = new GreenhouseCache.GreenHouseTicket(box, glassSeason);
@@ -38,6 +33,17 @@ public class GreenhouseGlassBlockEntity extends BlockEntity {
                 entity.ticket.age++;
             }
         }
+    }
+
+    private static @NotNull Season getGlassSeason(GreenhouseGlassBlock greenhouseGlassBlock, Season worldSeason) {
+        Season glassSeason = greenhouseGlassBlock.isInverted() ? Season.WINTER : Season.SUMMER;
+        switch (worldSeason) {
+            case SPRING -> glassSeason = greenhouseGlassBlock.isInverted() ? Season.FALL : glassSeason;
+            case SUMMER -> glassSeason = greenhouseGlassBlock.isInverted() ? Season.SPRING : glassSeason;
+            case FALL -> glassSeason = !greenhouseGlassBlock.isInverted() ? Season.SPRING : glassSeason;
+            case WINTER -> glassSeason = !greenhouseGlassBlock.isInverted() ? Season.FALL : glassSeason;
+        }
+        return glassSeason;
     }
 
 }

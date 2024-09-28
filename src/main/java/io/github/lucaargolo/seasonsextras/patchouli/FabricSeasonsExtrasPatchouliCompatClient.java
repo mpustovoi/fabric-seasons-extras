@@ -4,9 +4,13 @@ import com.google.gson.*;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.resources.CropConfigs;
 import io.github.lucaargolo.seasons.utils.Season;
+import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import io.github.lucaargolo.seasonsextras.client.FabricSeasonsExtrasClient;
 import io.github.lucaargolo.seasonsextras.patchouli.mixin.GuiBookEntryAccessor;
 import io.github.lucaargolo.seasonsextras.patchouli.page.*;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendBiomeMultiblocksPacket;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendMultiblocksPacket;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendValidBiomesPacket;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import io.github.lucaargolo.seasonsextras.utils.Tickable;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -24,8 +28,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import vazkii.patchouli.api.PatchouliAPI;
 import vazkii.patchouli.client.book.ClientBookRegistry;
 import vazkii.patchouli.client.book.text.BookTextParser;
+import vazkii.patchouli.common.book.Book;
+import vazkii.patchouli.common.book.BookRegistry;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,49 +48,27 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
     public static final HashMap<RegistryKey<World>, HashMap<Identifier, Set<Identifier>>> worldBiomeMultiblocks = new HashMap<>();
 
     public static void onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(FabricSeasonsExtrasPatchouliCompat.SEND_VALID_BIOMES_S2C, (client, handler, buf, responseSender) -> {
-            HashSet<Identifier> validBiomes = new HashSet<>();
-            Identifier worldId = buf.readIdentifier();
-            RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
-            int size = buf.readInt();
-            for(int i = 0; i < size; i++) {
-                validBiomes.add(buf.readIdentifier());
-            }
-            client.execute(() -> {
-                worldValidBiomes.computeIfPresent(worldKey, (key, list) -> new LinkedHashSet<>());
-                validBiomes.stream().sorted(Comparator.comparing(Identifier::getPath)).forEach(biome -> {
-                    handler.getRegistryManager().get(RegistryKeys.BIOME).getEntry(RegistryKey.of(RegistryKeys.BIOME, biome)).ifPresent(entry -> {
-                        worldValidBiomes.computeIfAbsent(worldKey, (key) -> new LinkedHashSet<>()).add(entry);
+        ClientPlayNetworking.registerGlobalReceiver(SendValidBiomesPacket.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                worldValidBiomes.computeIfPresent(payload.worldKey(), (key, list) -> new LinkedHashSet<>());
+                payload.validBiomes().stream().sorted(Comparator.comparing(Identifier::getPath)).forEach(biome -> {
+                    Objects.requireNonNull(context.client().world).getRegistryManager().get(RegistryKeys.BIOME).getEntry(RegistryKey.of(RegistryKeys.BIOME, biome)).ifPresent(entry -> {
+                        worldValidBiomes.computeIfAbsent(payload.worldKey(), (key) -> new LinkedHashSet<>()).add(entry);
                     });
                 });
+                reloadBook(context.client().world);
             });
         });
-        ClientPlayNetworking.registerGlobalReceiver(FabricSeasonsExtrasPatchouliCompat.SEND_BIOME_MULTIBLOCKS_S2C, (client, handler, buf, responseSender) -> {
-            HashMap<Identifier, Set<Identifier>> biomeMultiblocks = new HashMap<>();
-            Identifier worldId = buf.readIdentifier();
-            RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
-            int mapSize = buf.readInt();
-            for(int m = 0; m < mapSize; m++) {
-                HashSet<Identifier> set = new HashSet<>();
-                Identifier biomeId = buf.readIdentifier();
-                int setSize = buf.readInt();
-                for(int s = 0; s < setSize; s++) {
-                    set.add(buf.readIdentifier());
-                }
-                biomeMultiblocks.put(biomeId, set);
-            }
-            client.execute(() -> {
-                worldBiomeMultiblocks.put(worldKey, biomeMultiblocks);
+        ClientPlayNetworking.registerGlobalReceiver(SendBiomeMultiblocksPacket.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                worldBiomeMultiblocks.put(payload.worldKey(), payload.biomeMultiblocks());
+                reloadBook(context.client().world);
             });
         });
-        ClientPlayNetworking.registerGlobalReceiver(FabricSeasonsExtrasPatchouliCompat.SEND_MULTIBLOCKS_S2C, (client, handler, buf, responseSender) -> {
-            HashMap<Identifier, JsonObject> serverMultiblocks = new HashMap<>();
-            int size = buf.readInt();
-            for(int m = 0; m < size; m++) {
-                serverMultiblocks.put(buf.readIdentifier(), JsonParser.parseString(buf.readString()).getAsJsonObject());
-            }
-            client.execute(() -> {
-                multiblocks = serverMultiblocks;
+        ClientPlayNetworking.registerGlobalReceiver(SendMultiblocksPacket.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                multiblocks = payload.serverMultiblocks();
+                reloadBook(context.client().world);
             });
         });
 
@@ -103,17 +88,17 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
             }
         });
 
-        ClientBookRegistry.INSTANCE.pageTypes.put(new ModIdentifier("biome_search"), PageBiomeSearch.class);
-        ClientBookRegistry.INSTANCE.pageTypes.put(new ModIdentifier("seasonal_biome"), PageSeasonalBiome.class);
-        ClientBookRegistry.INSTANCE.pageTypes.put(new ModIdentifier("biome_description"), PageBiomeDescription.class);
-        ClientBookRegistry.INSTANCE.pageTypes.put(new ModIdentifier("crop_search"), PageCropSearch.class);
-        ClientBookRegistry.INSTANCE.pageTypes.put(new ModIdentifier("multiple_crafting"), PageMultipleCrafting.class);
+        ClientBookRegistry.INSTANCE.pageTypes.put(ModIdentifier.of("biome_search"), PageBiomeSearch.class);
+        ClientBookRegistry.INSTANCE.pageTypes.put(ModIdentifier.of("seasonal_biome"), PageSeasonalBiome.class);
+        ClientBookRegistry.INSTANCE.pageTypes.put(ModIdentifier.of("biome_description"), PageBiomeDescription.class);
+        ClientBookRegistry.INSTANCE.pageTypes.put(ModIdentifier.of("crop_search"), PageCropSearch.class);
+        ClientBookRegistry.INSTANCE.pageTypes.put(ModIdentifier.of("multiple_crafting"), PageMultipleCrafting.class);
 
 
         BookTextParser.register((parameter, state) -> FabricSeasonsExtrasClient.prefersCelsius ? FabricSeasonsExtrasClient.minecraftToCelsius(parameter) : FabricSeasonsExtrasClient.minecraftToFahrenheit(parameter), "seasonsextrastemperature");
         BookTextParser.register((parameter, state) -> I18n.translate(parameter), "seasonsextrastranslate");
 
-        PatchouliModifications.registerEntry(new ModIdentifier("biomes"), new ModIdentifier("seasonal_biomes"), (pages, index) -> {
+        PatchouliModifications.registerEntry(ModIdentifier.of("biomes"), ModIdentifier.of("seasonal_biomes"), (pages, index) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             ClientWorld world = client.world;
             if(world != null) {
@@ -124,7 +109,7 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
                 });
             }
         });
-        PatchouliModifications.registerEntry(new ModIdentifier("crops"), new ModIdentifier("seasonal_crops"), (pages, index) -> {
+        PatchouliModifications.registerEntry(ModIdentifier.of("crops"), ModIdentifier.of("seasonal_crops"), (pages, index) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             ClientWorld world = client.world;
             if(world != null) {
@@ -138,10 +123,19 @@ public class FabricSeasonsExtrasPatchouliCompatClient {
         });
     }
 
+    private static void reloadBook(World world) {
+        Book book = BookRegistry.INSTANCE.books.get(FabricSeasonsExtras.SEASONAL_COMPENDIUM_ITEM_ID);
+        if(book != null) {
+            book.reloadContents(world, true);
+            book.reloadLocks(false);
+        }
+    }
+
+
     private static void addSeasonalBiomePage(JsonArray pages, int index, RegistryKey<World> worldKey, RegistryEntry<Biome> entry) {
 
         Biome biome = entry.value();
-        Identifier biomeId = entry.getKey().orElse(RegistryKey.of(RegistryKeys.BIOME, new Identifier("plains"))).getValue();
+        Identifier biomeId = entry.getKey().orElse(RegistryKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("plains"))).getValue();
 
         String biomeName = biomeId.toTranslationKey("biome");
         Pair<Boolean, Float> springPair = FabricSeasons.getSeasonWeather(Season.SPRING, biomeId, biome.hasPrecipitation(),biome.getTemperature());

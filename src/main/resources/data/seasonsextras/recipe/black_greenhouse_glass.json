@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "seasonsextras:black_greenhouse_glass",
+    "id": "seasonsextras:black_greenhouse_glass",
     "count": 4
   },
   "fabric:load_conditions": [

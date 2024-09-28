@@ -10,11 +10,11 @@
       "tag": "minecraft:planks"
     },
     "G": {
-      "item": "minecraft:magenta_stained_glass"
+      "item": "minecraft:blue_stained_glass"
     }
   },
   "result": {
-    "item": "seasonsextras:magenta_greenhouse_glass",
+    "id": "seasonsextras:blue_greenhouse_glass",
     "count": 4
   },
   "fabric:load_conditions": [

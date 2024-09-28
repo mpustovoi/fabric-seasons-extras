@@ -37,7 +37,7 @@ public class MouseMixin {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "method_1602", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "method_55795", cancellable = true)
     public void mouseDragged(Screen screen, double d, double e, double f, double g, CallbackInfo ci) {
         if(screen instanceof GuiBookEntryAccessor bookEntry && screen instanceof GuiBookAccessor book) {
             if(bookEntry.getLeftPage() instanceof PageSearch page) {
@@ -54,8 +54,9 @@ public class MouseMixin {
     }
 
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z"), method = "onMouseScroll", locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    public void mouseScrolled(long window, double horizontal, double vertical, CallbackInfo ci, double d, double e, double f) {
+    @SuppressWarnings("InvalidInjectorMethodSignature")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDDD)Z"), method = "onMouseScroll", locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    public void mouseScrolled(long window, double horizontal, double vertical, CallbackInfo ci, boolean bl, double d, double e, double f, double g, double h) {
         Screen screen = this.client.currentScreen;
         if(screen instanceof GuiBookEntryAccessor bookEntry && screen instanceof GuiBookAccessor book) {
             if(bookEntry.getLeftPage() instanceof PageSearch page) {

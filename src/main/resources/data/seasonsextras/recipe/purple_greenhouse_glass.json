@@ -7,14 +7,14 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft:iron_bars"
+      "tag": "minecraft:planks"
     },
     "G": {
-      "item": "minecraft:tinted_glass"
+      "item": "minecraft:purple_stained_glass"
     }
   },
   "result": {
-    "item": "seasonsextras:tinted_greenhouse_glass",
+    "id": "seasonsextras:purple_greenhouse_glass",
     "count": 4
   },
   "fabric:load_conditions": [

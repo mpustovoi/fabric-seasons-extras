@@ -1,6 +1,10 @@
 package io.github.lucaargolo.seasonsextras.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
+import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity;
 import io.github.lucaargolo.seasonsextras.blockentities.GreenhouseGlassBlockEntity;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -16,14 +20,19 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-@SuppressWarnings("deprecation")
 public class GreenhouseGlassBlock extends BlockWithEntity {
 
-    public final boolean inverted;
+    public static final MapCodec<GreenhouseGlassBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(Codec.BOOL.fieldOf("inverted").forGetter(GreenhouseGlassBlock::isInverted), createSettingsCodec()).apply(instance, GreenhouseGlassBlock::new));
+
+    protected final boolean inverted;
 
     public GreenhouseGlassBlock(boolean inverted, Settings settings) {
         super(settings);
         this.inverted = inverted;
+    }
+
+    public boolean isInverted() {
+        return inverted;
     }
 
     @Override
@@ -63,10 +72,13 @@ public class GreenhouseGlassBlock extends BlockWithEntity {
         return 1.0f;
     }
 
-
     @Override
     public int getOpacity(BlockState state, BlockView world, BlockPos pos) {
         return inverted ? world.getMaxLightLevel() : super.getOpacity(state, world, pos);
     }
 
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
+    }
 }

@@ -6,6 +6,7 @@ import io.github.lucaargolo.seasonsextras.item.SeasonCalendarItem;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
@@ -17,7 +18,7 @@ import java.util.List;
 
 public class TooltipRenderer {
 
-    public static void render(MinecraftClient client, DrawContext drawContext, float tickDelta) {
+    public static void render(MinecraftClient client, DrawContext drawContext, RenderTickCounter counter) {
         if(client.player != null && client.world != null && client.crosshairTarget != null) {
             PlayerEntity player = client.player;
             World world = client.world;

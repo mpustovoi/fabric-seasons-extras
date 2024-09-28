@@ -17,7 +17,7 @@
     }
   },
   "result": {
-    "item": "seasonsextras:crop_season_tester",
+    "id": "seasonsextras:crop_season_tester",
     "count": 1
   },
   "fabric:load_conditions": [

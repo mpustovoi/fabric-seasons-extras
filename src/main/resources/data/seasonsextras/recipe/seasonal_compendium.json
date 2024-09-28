@@ -18,7 +18,7 @@
     }
   ],
   "result": {
-    "item": "seasonsextras:seasonal_compendium",
+    "id": "seasonsextras:seasonal_compendium",
     "count": 1
   },
   "fabric:load_conditions": [

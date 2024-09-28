@@ -1,5 +1,8 @@
 package io.github.lucaargolo.seasonsextras;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasonsextras.block.AirConditioningBlock;
 import io.github.lucaargolo.seasonsextras.block.GreenhouseGlassBlock;
@@ -12,13 +15,18 @@ import io.github.lucaargolo.seasonsextras.blockentities.SeasonCalendarBlockEntit
 import io.github.lucaargolo.seasonsextras.blockentities.SeasonDetectorBlockEntity;
 import io.github.lucaargolo.seasonsextras.item.*;
 import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouliCompat;
+import io.github.lucaargolo.seasonsextras.payload.SendModulePressPacket;
+import io.github.lucaargolo.seasonsextras.payload.SendTestedSeasonPacket;
 import io.github.lucaargolo.seasonsextras.screenhandlers.AirConditioningScreenHandler;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceCondition;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditionType;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
@@ -31,13 +39,16 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.registry.*;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,15 +69,11 @@ public class FabricSeasonsExtras implements ModInitializer {
     public static GreenhouseGlassBlock[] GREENHOUSE_GLASS_BLOCKS = new GreenhouseGlassBlock[17];
 
     //Items
-    public static ModIdentifier SEASONAL_COMPENDIUM_ITEM_ID = new ModIdentifier("seasonal_compendium");
+    public static Identifier SEASONAL_COMPENDIUM_ITEM_ID = ModIdentifier.of("seasonal_compendium");
     public static Item SEASON_CALENDAR_ITEM;
     
     //Screen Handlers
     public static ScreenHandlerType<AirConditioningScreenHandler> AIR_CONDITIONING_SCREEN_HANDLER;
-
-    //Packets
-    public static ModIdentifier SEND_TESTED_SEASON_S2C = new ModIdentifier("send_tested_season_s2c");
-    public static ModIdentifier SEND_MODULE_PRESS_C2S = new ModIdentifier("send_module_press_c2s");
 
     //Creative Tab
     private static final List<Pair<Predicate<Item>, Item>> creativeTabItems = new ArrayList<>();
@@ -82,7 +89,7 @@ public class FabricSeasonsExtras implements ModInitializer {
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public void onInitialize() {
-        Registry.register(Registries.ITEM_GROUP, new ModIdentifier("creative_tab"), FabricItemGroup.builder()
+        Registry.register(Registries.ITEM_GROUP, ModIdentifier.of("creative_tab"), FabricItemGroup.builder()
                 .icon(() -> SEASON_CALENDAR_ITEM.getDefaultStack())
                 .entries((displayContext, entries) -> {
                     creativeTabItems.forEach(pair -> {
@@ -97,46 +104,49 @@ public class FabricSeasonsExtras implements ModInitializer {
         );
 
         for (DyeColor value : DyeColor.values()) {
-            GreenhouseGlassBlock greenhouseGlass = Registry.register(Registries.BLOCK, new ModIdentifier(value.getName()+"_greenhouse_glass"), new GreenhouseGlassBlock(false, FabricBlockSettings.copyOf(Blocks.GREEN_STAINED_GLASS)));
-            addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier(value.getName()+"_greenhouse_glass"), new GreenHouseGlassItem(greenhouseGlass, new Item.Settings())));
+            GreenhouseGlassBlock greenhouseGlass = Registry.register(Registries.BLOCK, ModIdentifier.of(value.getName()+"_greenhouse_glass"), new GreenhouseGlassBlock(false, FabricBlockSettings.copyOf(Blocks.GREEN_STAINED_GLASS)));
+            addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, ModIdentifier.of(value.getName()+"_greenhouse_glass"), new GreenHouseGlassItem(greenhouseGlass, new Item.Settings())));
             GREENHOUSE_GLASS_BLOCKS[value.ordinal()] = greenhouseGlass;
         }
-        GreenhouseGlassBlock tintedGreenhouseGlass = Registry.register(Registries.BLOCK, new ModIdentifier("tinted_greenhouse_glass"), new GreenhouseGlassBlock(true, FabricBlockSettings.copyOf(Blocks.TINTED_GLASS)));
-        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier("tinted_greenhouse_glass"), new GreenHouseGlassItem(tintedGreenhouseGlass, new Item.Settings())));
+        GreenhouseGlassBlock tintedGreenhouseGlass = Registry.register(Registries.BLOCK, ModIdentifier.of("tinted_greenhouse_glass"), new GreenhouseGlassBlock(true, FabricBlockSettings.copyOf(Blocks.TINTED_GLASS)));
+        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, ModIdentifier.of("tinted_greenhouse_glass"), new GreenHouseGlassItem(tintedGreenhouseGlass, new Item.Settings())));
         GREENHOUSE_GLASS_BLOCKS[16] = tintedGreenhouseGlass;
-        GREENHOUSE_GLASS_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, new ModIdentifier("greenhouse_glass"), FabricBlockEntityTypeBuilder.create(GreenhouseGlassBlockEntity::new, GREENHOUSE_GLASS_BLOCKS).build(null));
+        GREENHOUSE_GLASS_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, ModIdentifier.of("greenhouse_glass"), FabricBlockEntityTypeBuilder.create(GreenhouseGlassBlockEntity::new, GREENHOUSE_GLASS_BLOCKS).build(null));
 
-        AirConditioningBlock heaterBlock = Registry.register(Registries.BLOCK, new ModIdentifier("heater"), new AirConditioningBlock(Conditioning.HEATER, FabricBlockSettings.copyOf(Blocks.COBBLESTONE).luminance(state -> state.get(AirConditioningBlock.LEVEL) * 5)));
-        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier("heater"), new AirConditioningItem(heaterBlock, new Item.Settings())));
-        AirConditioningBlock chillerBlock = Registry.register(Registries.BLOCK, new ModIdentifier("chiller"), new AirConditioningBlock(Conditioning.CHILLER, FabricBlockSettings.copyOf(Blocks.IRON_BLOCK).luminance(state -> state.get(AirConditioningBlock.LEVEL) * 5)));
-        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier("chiller"), new AirConditioningItem(chillerBlock, new Item.Settings())));
-        AIR_CONDITIONING_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, new ModIdentifier("air_conditioning"), FabricBlockEntityTypeBuilder.create(AirConditioningBlockEntity::new, heaterBlock, chillerBlock).build(null));
-        AIR_CONDITIONING_SCREEN_HANDLER = Registry.register(Registries.SCREEN_HANDLER, new ModIdentifier("air_conditioning_screen"), new ExtendedScreenHandlerType<>((syncId, playerInventory, buf) -> {
-            return new AirConditioningScreenHandler(syncId, playerInventory, ScreenHandlerContext.create(playerInventory.player.getWorld(), buf.readBlockPos()), buf.readRegistryValue(Registries.BLOCK));
-        }));
+        AirConditioningBlock heaterBlock = Registry.register(Registries.BLOCK, ModIdentifier.of("heater"), new AirConditioningBlock(Conditioning.HEATER, FabricBlockSettings.copyOf(Blocks.COBBLESTONE).luminance(state -> state.get(AirConditioningBlock.LEVEL) * 5)));
+        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, ModIdentifier.of("heater"), new AirConditioningItem(heaterBlock, new Item.Settings())));
+        AirConditioningBlock chillerBlock = Registry.register(Registries.BLOCK, ModIdentifier.of("chiller"), new AirConditioningBlock(Conditioning.CHILLER, FabricBlockSettings.copyOf(Blocks.IRON_BLOCK).luminance(state -> state.get(AirConditioningBlock.LEVEL) * 5)));
+        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, ModIdentifier.of("chiller"), new AirConditioningItem(chillerBlock, new Item.Settings())));
+        AIR_CONDITIONING_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, ModIdentifier.of("air_conditioning"), FabricBlockEntityTypeBuilder.create(AirConditioningBlockEntity::new, heaterBlock, chillerBlock).build(null));
+        AIR_CONDITIONING_SCREEN_HANDLER = Registry.register(Registries.SCREEN_HANDLER, ModIdentifier.of("air_conditioning_screen"), new ExtendedScreenHandlerType<> ((syncId, playerInventory, data) -> {
+            return new AirConditioningScreenHandler(syncId, playerInventory, ScreenHandlerContext.create(playerInventory.player.getWorld(), data.pos()), data.block());
+        }, AirConditioningScreenHandler.Data.CODEC));
 
-        SeasonDetectorBlock seasonDetector = Registry.register(Registries.BLOCK, new ModIdentifier("season_detector"), new SeasonDetectorBlock(FabricBlockSettings.copyOf(Blocks.DAYLIGHT_DETECTOR)));
-        SEASON_DETECTOR_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, new ModIdentifier("season_detector"), FabricBlockEntityTypeBuilder.create(seasonDetector::createBlockEntity, seasonDetector).build(null));
-        addToTab(Registry.register(Registries.ITEM, new ModIdentifier("season_detector"), new SeasonDetectorItem(seasonDetector, new Item.Settings())));
+        SeasonDetectorBlock seasonDetector = Registry.register(Registries.BLOCK, ModIdentifier.of("season_detector"), new SeasonDetectorBlock(FabricBlockSettings.copyOf(Blocks.DAYLIGHT_DETECTOR)));
+        SEASON_DETECTOR_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, ModIdentifier.of("season_detector"), FabricBlockEntityTypeBuilder.create(seasonDetector::createBlockEntity, seasonDetector).build(null));
+        addToTab(Registry.register(Registries.ITEM, ModIdentifier.of("season_detector"), new SeasonDetectorItem(seasonDetector, new Item.Settings())));
 
-        SEASON_CALENDAR_BLOCK = Registry.register(Registries.BLOCK, new ModIdentifier("season_calendar"), new SeasonCalendarBlock(FabricBlockSettings.copyOf(Blocks.OAK_PLANKS)));
-        SEASON_CALENDAR_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, new ModIdentifier("season_calendar"), FabricBlockEntityTypeBuilder.create(SEASON_CALENDAR_BLOCK::createBlockEntity, SEASON_CALENDAR_BLOCK).build(null));
-        SEASON_CALENDAR_ITEM = Registry.register(Registries.ITEM, new ModIdentifier("season_calendar"), new SeasonCalendarItem(SEASON_CALENDAR_BLOCK, (new Item.Settings())));
+        SEASON_CALENDAR_BLOCK = Registry.register(Registries.BLOCK, ModIdentifier.of("season_calendar"), new SeasonCalendarBlock(FabricBlockSettings.copyOf(Blocks.OAK_PLANKS)));
+        SEASON_CALENDAR_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, ModIdentifier.of("season_calendar"), FabricBlockEntityTypeBuilder.create(SEASON_CALENDAR_BLOCK::createBlockEntity, SEASON_CALENDAR_BLOCK).build(null));
+        SEASON_CALENDAR_ITEM = Registry.register(Registries.ITEM, ModIdentifier.of("season_calendar"), new SeasonCalendarItem(SEASON_CALENDAR_BLOCK, (new Item.Settings())));
         addToTab(SEASON_CALENDAR_ITEM);
 
         addToTab(i -> FabricLoader.getInstance().isModLoaded("patchouli"), Registry.register(Registries.ITEM, SEASONAL_COMPENDIUM_ITEM_ID, new SeasonalCompendiumItem(new Item.Settings())));
-        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, new ModIdentifier("crop_season_tester"), new CropSeasonTesterItem(new Item.Settings())));
+        addToTab(i -> FabricSeasons.CONFIG.isSeasonMessingCrops(), Registry.register(Registries.ITEM, ModIdentifier.of("crop_season_tester"), new CropSeasonTesterItem(new Item.Settings())));
 
         FabricSeasonsExtrasPatchouliCompat.onInitialize();
 
-        ServerPlayNetworking.registerGlobalReceiver(SEND_MODULE_PRESS_C2S, (server, player, handler, buf, sender) -> {
-            int button = buf.readInt();
-            server.execute(() -> {
-                if(player.currentScreenHandler instanceof AirConditioningScreenHandler screenHandler) {
-                    screenHandler.cycleButton(button);
+        PayloadTypeRegistry.playC2S().register(SendModulePressPacket.ID, SendModulePressPacket.CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(SendModulePressPacket.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                if(context.player().currentScreenHandler instanceof AirConditioningScreenHandler screenHandler) {
+                    screenHandler.cycleButton(payload.button());
                 }
             });
         });
+
+        PayloadTypeRegistry.playS2C().register(SendTestedSeasonPacket.ID, SendTestedSeasonPacket.CODEC);
 
         ItemStorage.SIDED.registerForBlockEntity((entity, direction) -> {
             Storage<ItemVariant> inputStorage = InventoryStorage.of(entity.getInputInventory(), direction);
@@ -144,7 +154,26 @@ public class FabricSeasonsExtras implements ModInitializer {
             return new CombinedStorage<>(List.of(inputStorage, moduleStorage));
         }, AIR_CONDITIONING_TYPE);
 
-        ResourceConditions.register(new ModIdentifier("is_season_messing_crops"), json -> FabricSeasons.CONFIG.isSeasonMessingCrops());
+        ResourceConditions.register(SeasonMessingCropsCondition.TYPE);
+    }
+
+    public record SeasonMessingCropsCondition() implements ResourceCondition {
+
+        public static final Identifier ID = ModIdentifier.of("is_season_messing_crops");
+
+        public static final ResourceConditionType<SeasonMessingCropsCondition> TYPE = ResourceConditionType.create(
+                ID, MapCodec.unit(new SeasonMessingCropsCondition())
+        );
+
+        @Override
+        public ResourceConditionType<?> getType() {
+            return TYPE;
+        }
+
+        @Override
+        public boolean test(RegistryWrapper.@Nullable WrapperLookup registryLookup) {
+            return FabricSeasons.CONFIG.isSeasonMessingCrops();
+        }
     }
 
 }

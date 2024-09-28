@@ -4,6 +4,7 @@ import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.utils.Season;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import io.github.lucaargolo.seasonsextras.blockentities.AirConditioningBlockEntity.BurnSlot;
+import io.github.lucaargolo.seasonsextras.payload.SendModulePressPacket;
 import io.github.lucaargolo.seasonsextras.screenhandlers.AirConditioningScreenHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -48,7 +49,9 @@ public class AirConditioningScreen extends HandledScreen<AirConditioningScreenHa
 
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        float delta = MinecraftClient.getInstance().getTickDelta();
+        if(client == null || client.world == null) return;
+
+        float delta = client.getRenderTickCounter().getTickDelta(true);
         BurnSlot[] burnSlots = handler.getBurnSlots();
 
         float lerpProgress = MathHelper.lerp(delta, lastProgress, handler.getProgress());
@@ -98,7 +101,7 @@ public class AirConditioningScreen extends HandledScreen<AirConditioningScreenHa
             for(int i = 0; i < burnSlots.length; i++) {
                 BurnSlot burnSlot = burnSlots[i];
                 if(burnSlot.burnTime > 0) {
-                    tooltip.add(Text.translatable("screen.seasonsextras.burn_description", (i + 1), Text.translatable("screen.seasonsextras.time_left", StringHelper.formatTicks(burnSlot.burnTime)).formatted(Formatting.DARK_RED)).formatted(Formatting.GRAY).asOrderedText());
+                    tooltip.add(Text.translatable("screen.seasonsextras.burn_description", (i + 1), Text.translatable("screen.seasonsextras.time_left", StringHelper.formatTicks(burnSlot.burnTime, client.world.getTickManager().getTickRate())).formatted(Formatting.DARK_RED)).formatted(Formatting.GRAY).asOrderedText());
                 }
             }
             tooltip.add(Text.translatable(worldSeason.getTranslationKey()).formatted(worldSeason.getFormatting()).append(Text.literal(" -> ").formatted(Formatting.GRAY)).append(Text.translatable(conditionedSeason.getTranslationKey()).formatted(conditionedSeason.getFormatting())).asOrderedText());
@@ -129,17 +132,13 @@ public class AirConditioningScreen extends HandledScreen<AirConditioningScreenHa
             if(mouseX >= clickX && mouseX < clickX+7 && mouseY >= clickY && mouseY < clickY+7) {
                 client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 pressedTime[i] = 3;
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeInt(i);
-                ClientPlayNetworking.send(FabricSeasonsExtras.SEND_MODULE_PRESS_C2S, buf);
+                ClientPlayNetworking.send(new SendModulePressPacket(i));
             }
         }
         if(mouseX >= x+163 && mouseX < x+163+7 && mouseY >= y+6 && mouseY < y+6+7) {
             client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             pressedTime[burnSlots.length] = 3;
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeInt(burnSlots.length);
-            ClientPlayNetworking.send(FabricSeasonsExtras.SEND_MODULE_PRESS_C2S, buf);
+            ClientPlayNetworking.send(new SendModulePressPacket(burnSlots.length));
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

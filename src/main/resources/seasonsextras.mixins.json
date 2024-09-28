@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.lucaargolo.seasonsextras.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SyntheticTooltipContextMixin",
+    "TooltipContextMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

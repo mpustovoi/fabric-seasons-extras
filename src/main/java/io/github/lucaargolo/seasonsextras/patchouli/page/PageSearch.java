@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class PageSearch extends PageText implements Tickable {
+public abstract class PageSearch extends PageText {
 
     protected final transient List<Pair<Identifier, String>> searchable = new ArrayList<>();
 
@@ -42,10 +42,9 @@ public abstract class PageSearch extends PageText implements Tickable {
 
     @Override
     public void render(DrawContext graphics, int mouseX, int mouseY, float pticks) {
-
         super.render(graphics, mouseX, mouseY, pticks);
         graphics.drawTexture(parent.getBookTexture(), 6, 135, 140f, 183f, 99, 14, 512, 256);
-        textRender.render(graphics, mouseX, mouseY);
+        textRender.render(graphics, mouseX, mouseY, pticks);
         RenderSystem.setShaderTexture(0, parent.getBookTexture());
         if(scrollable) {
             int mx = mouseX-parent.bookLeft;
@@ -66,7 +65,7 @@ public abstract class PageSearch extends PageText implements Tickable {
         TextRenderer fontRenderer = ((FontManagerMixed) ((MinecraftClientAccessor) MinecraftClient.getInstance()).getFontManager()).createStyledTextRenderer(book.getFontStyle());
         searchBar = new TextFieldWidget(fontRenderer, parent.bookLeft+left+21, parent.bookTop+top+136, 115, 10, Text.literal("")) {
             @Override
-            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
                 DrawContextAccessor accessor = (DrawContextAccessor) context;
                 DrawContext noShadowContext = new DrawContext(accessor.getClient(), accessor.getVertexConsumers()) {
                     @Override
@@ -79,7 +78,7 @@ public abstract class PageSearch extends PageText implements Tickable {
                     }
                 };
                 ((DrawContextAccessor) noShadowContext).setMatrices(context.getMatrices());
-                super.renderButton(noShadowContext, mouseX, mouseY, delta);
+                super.renderWidget(noShadowContext, mouseX, mouseY, delta);
             }
         };
         searchBar.setEditableColor(0);
@@ -187,11 +186,6 @@ public abstract class PageSearch extends PageText implements Tickable {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void tick() {
-        searchBar.tick();
     }
 
     @Override

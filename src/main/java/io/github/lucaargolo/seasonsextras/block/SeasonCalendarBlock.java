@@ -1,5 +1,6 @@
 package io.github.lucaargolo.seasonsextras.block;
 
+import com.mojang.serialization.MapCodec;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.utils.Season;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
@@ -29,6 +30,7 @@ public class SeasonCalendarBlock extends BlockWithEntity {
     public static final IntProperty PROGRESS = IntProperty.of("progress", 0, 15);
 
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+    public static final MapCodec<SeasonCalendarBlock> CODEC = createCodec(SeasonCalendarBlock::new);
 
     private static final VoxelShape EAST_SHAPE = Block.createCuboidShape(15, 3, 3, 16, 12, 13);
     private static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(3, 3, 0, 13, 12, 1);
@@ -60,7 +62,6 @@ public class SeasonCalendarBlock extends BlockWithEntity {
         return this.getDefaultState().with(SEASON, currentSeason).with(PROGRESS, currentProgress).with(FACING, facing);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
         Direction facing = state.get(FACING);
@@ -69,7 +70,6 @@ public class SeasonCalendarBlock extends BlockWithEntity {
         return facingState.isFullCube(world, facingPos);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
         return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
@@ -100,7 +100,6 @@ public class SeasonCalendarBlock extends BlockWithEntity {
         builder.add(FACING);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         switch (state.get(FACING)) {
@@ -122,5 +121,10 @@ public class SeasonCalendarBlock extends BlockWithEntity {
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.MODEL;
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
     }
 }

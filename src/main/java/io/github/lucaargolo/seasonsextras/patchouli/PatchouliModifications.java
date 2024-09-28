@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PatchouliModifications {
 
-    private static final Identifier MODIFIABLE_ID = new ModIdentifier("modifiable");
+    private static final Identifier MODIFIABLE_ID = ModIdentifier.of("modifiable");
     private static final HashMap<Identifier, List<Pair<Identifier, PatchouliEntryModification>>> entryModifications = new HashMap<>();
 
     public static void registerEntry(Identifier id, Identifier modId, PatchouliEntryModification modification) {

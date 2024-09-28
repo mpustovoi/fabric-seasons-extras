@@ -23,7 +23,7 @@
     }
   },
   "result": {
-    "item": "seasonsextras:chiller",
+    "id": "seasonsextras:chiller",
     "count": 1
   },
   "fabric:load_conditions": [

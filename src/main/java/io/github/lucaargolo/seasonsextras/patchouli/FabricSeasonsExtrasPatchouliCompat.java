@@ -3,8 +3,13 @@ package io.github.lucaargolo.seasonsextras.patchouli;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import io.github.lucaargolo.seasons.FabricSeasons;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendBiomeMultiblocksPacket;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendMultiblocksPacket;
+import io.github.lucaargolo.seasonsextras.patchouli.payload.SendValidBiomesPacket;
+import io.github.lucaargolo.seasonsextras.payload.SendTestedSeasonPacket;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
@@ -27,16 +32,17 @@ import net.minecraft.world.gen.feature.TreeFeature;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FabricSeasonsExtrasPatchouliCompat {
 
     private static final HashMap<Identifier, JsonObject> multiblockCache = new HashMap<>();
 
-    public static ModIdentifier SEND_VALID_BIOMES_S2C = new ModIdentifier("send_valid_biomes_s2c");
-    public static ModIdentifier SEND_BIOME_MULTIBLOCKS_S2C = new ModIdentifier("send_biome_multiblocks_s2c");
-    public static ModIdentifier SEND_MULTIBLOCKS_S2C = new ModIdentifier("send_multiblocks_s2c");
-
     public static void onInitialize() {
+        PayloadTypeRegistry.playS2C().register(SendBiomeMultiblocksPacket.ID, SendBiomeMultiblocksPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(SendMultiblocksPacket.ID, SendMultiblocksPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(SendValidBiomesPacket.ID, SendValidBiomesPacket.CODEC);
+
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             sendValidBiomes(server, handler.player);
         });
@@ -54,14 +60,11 @@ public class FabricSeasonsExtrasPatchouliCompat {
                 serverWorld.getChunkManager().getChunkGenerator().getBiomeSource().getBiomes().forEach(entry -> {
                     entry.getKey().ifPresent(key -> validBiomes.add(entry));
                 });
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeIdentifier(serverWorld.getRegistryKey().getValue());
-                buf.writeInt(validBiomes.size());
-                validBiomes.stream().map(r -> r.getKey().get().getValue()).forEach(buf::writeIdentifier);
+                SendValidBiomesPacket packet = new SendValidBiomesPacket(serverWorld.getRegistryKey(), validBiomes.stream().map(r -> r.getKey().get().getValue()).collect(Collectors.toSet()));
                 if(player != null) {
-                    ServerPlayNetworking.send(player, SEND_VALID_BIOMES_S2C, buf);
+                    ServerPlayNetworking.send(player, packet);
                 }else{
-                    server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, SEND_VALID_BIOMES_S2C, buf));
+                    server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, packet));
                 }
                 sendBiomeMultiblocks(server, player, serverWorld, validBiomes);
             }
@@ -71,8 +74,7 @@ public class FabricSeasonsExtrasPatchouliCompat {
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static void sendBiomeMultiblocks(MinecraftServer server, @Nullable ServerPlayerEntity player, ServerWorld serverWorld, Set<RegistryEntry<Biome>> validBiomes) {
-        Identifier worldId = serverWorld.getRegistryKey().getValue();
-        HashMap<Identifier, HashSet<Identifier>> biomeToMultiblocks = new HashMap<>();
+        HashMap<Identifier, Set<Identifier>> biomeToMultiblocks = new HashMap<>();
         validBiomes.forEach(entry -> {
             Identifier biomeId = entry.getKey().get().getValue();
             List<ConfiguredFeature<?, ?>> validFeatures = entry.value().getGenerationSettings().getFeatures().stream()
@@ -86,7 +88,7 @@ public class FabricSeasonsExtrasPatchouliCompat {
                 Identifier cfId = server.getRegistryManager().get(RegistryKeys.CONFIGURED_FEATURE).getId(cf);
                 if(cfId != null) {
                     if (!multiblockCache.containsKey(cfId)) {
-                        PatchouliMultiblockCreator creator = new PatchouliMultiblockCreator(serverWorld, Blocks.GRASS_BLOCK.getDefaultState(), Blocks.GRASS.getDefaultState(), new BlockPos(-100, -100, -100), (c) -> {
+                        PatchouliMultiblockCreator creator = new PatchouliMultiblockCreator(serverWorld, Blocks.GRASS_BLOCK.getDefaultState(), Blocks.SHORT_GRASS.getDefaultState(), new BlockPos(-100, -100, -100), (c) -> {
                             cf.generate(c.getFakeWorld(), serverWorld.getChunkManager().getChunkGenerator(), Random.create(0L), new BlockPos(100, 100, 100));
                         });
                         Optional<JsonObject> optional = creator.getMultiblock((set) -> {
@@ -113,7 +115,7 @@ public class FabricSeasonsExtrasPatchouliCompat {
                     }
                 }
             };
-            Identifier empty = new ModIdentifier("empty");
+            Identifier empty = ModIdentifier.of("empty");
             if(multiblockCache.containsKey(empty)) {
                 biomeToMultiblocks.computeIfAbsent(biomeId, b -> new HashSet<>(Collections.singleton(empty)));
             }else{
@@ -123,40 +125,21 @@ public class FabricSeasonsExtrasPatchouliCompat {
                 biomeToMultiblocks.computeIfAbsent(biomeId, b -> new HashSet<>(Collections.singleton(empty)));
             }
         });
-
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeIdentifier(worldId);
-        buf.writeInt(biomeToMultiblocks.size());
-        biomeToMultiblocks.forEach((identifier, set) -> {
-            buf.writeIdentifier(identifier);
-            buf.writeInt(set.size());
-            set.forEach(buf::writeIdentifier);
-        });
+        SendBiomeMultiblocksPacket packet = new SendBiomeMultiblocksPacket(serverWorld.getRegistryKey(), biomeToMultiblocks);
         if(player != null) {
-            ServerPlayNetworking.send(player, SEND_BIOME_MULTIBLOCKS_S2C, buf);
+            ServerPlayNetworking.send(player, packet);
         }else{
-            server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, SEND_BIOME_MULTIBLOCKS_S2C, buf));
+            server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, packet));
         }
 
     }
 
     private static void sendMultiblocks(MinecraftServer server, @Nullable ServerPlayerEntity player) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeInt(multiblockCache.size());
-        multiblockCache.forEach((identifier, jsonObject) -> {
-            buf.writeIdentifier(identifier);
-            var string = jsonObject.toString();
-            if(string.length() > PacketByteBuf.DEFAULT_MAX_STRING_LENGTH) {
-                buf.writeString("{}");
-            }else{
-                buf.writeString(string);
-            };
-
-        });
+        SendMultiblocksPacket packet = new SendMultiblocksPacket(multiblockCache);
         if(player != null) {
-            ServerPlayNetworking.send(player, SEND_MULTIBLOCKS_S2C, buf);
+            ServerPlayNetworking.send(player, packet);
         }else{
-            server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, SEND_MULTIBLOCKS_S2C, buf));
+            server.getPlayerManager().getPlayerList().forEach(p -> ServerPlayNetworking.send(p, packet));
         }
     }
 

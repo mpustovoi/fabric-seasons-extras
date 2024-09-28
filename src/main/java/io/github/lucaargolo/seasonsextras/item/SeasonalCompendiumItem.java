@@ -2,10 +2,10 @@ package io.github.lucaargolo.seasonsextras.item;
 
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -33,12 +33,11 @@ public class SeasonalCompendiumItem extends Item {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
         tooltip.add(Text.translatable("patchouli.seasonsextras.description").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
         if(!FabricLoader.getInstance().isModLoaded("patchouli")) {
             tooltip.add(Text.translatable("tooltip.seasonsextras.not_enabled").formatted(Formatting.RED, Formatting.ITALIC));
         }
     }
-
 }

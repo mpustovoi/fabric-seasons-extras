@@ -5,14 +5,15 @@ import io.github.lucaargolo.seasons.utils.FertilizableUtil;
 import io.github.lucaargolo.seasons.utils.GreenhouseCache;
 import io.github.lucaargolo.seasons.utils.Season;
 import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
+import io.github.lucaargolo.seasonsextras.payload.SendTestedSeasonPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -24,6 +25,7 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CropSeasonTesterItem extends Item {
@@ -41,29 +43,27 @@ public class CropSeasonTesterItem extends Item {
             Season upperSeason = GreenhouseCache.test(serverWorld, blockPos.up());
             PlayerEntity player = context.getPlayer();
             if(player instanceof ServerPlayerEntity serverPlayer) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeBlockPos(blockPos);
-                buf.writeInt(2);
+                List<Text> tooltip = new ArrayList<>();
                 if(!FabricSeasons.CONFIG.isSeasonMessingCrops() || (FabricSeasons.CONFIG.doCropsGrowsNormallyUnderground() && serverWorld.getLightLevel(LightType.SKY, blockPos.up()) == 0)) {
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_disabled_1"));
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_disabled_2"));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_disabled_1"));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_disabled_2"));
                 } else if(!player.isSneaking() && FabricSeasons.SEEDS_MAP.containsValue(blockState.getBlock())) {
                     float multiplier = FertilizableUtil.getMultiplier(serverWorld, blockPos, blockState);
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_crop_1", multiplier));
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_crop_2", Text.translatable(blockSeason.getTranslationKey()).formatted(blockSeason.getFormatting())));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_crop_1", multiplier));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_crop_2", Text.translatable(blockSeason.getTranslationKey()).formatted(blockSeason.getFormatting())));
                 }else {
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_enabled_1"));
-                    buf.writeText(Text.translatable("tooltip.seasonsextras.tester_result_enabled_2", Text.translatable(upperSeason.getTranslationKey()).formatted(upperSeason.getFormatting())));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_enabled_1"));
+                    tooltip.add(Text.translatable("tooltip.seasonsextras.tester_result_enabled_2", Text.translatable(upperSeason.getTranslationKey()).formatted(upperSeason.getFormatting())));
                 }
-                ServerPlayNetworking.send(serverPlayer, FabricSeasonsExtras.SEND_TESTED_SEASON_S2C, buf);
+                ServerPlayNetworking.send(serverPlayer, new SendTestedSeasonPacket(blockPos, tooltip));
             }
         }
         return ActionResult.SUCCESS;
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
         tooltip.add(Text.translatable("tooltip.seasonsextras.crop_tester_1").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
         tooltip.add(Text.translatable("tooltip.seasonsextras.crop_tester_2").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
         if(!FabricSeasons.CONFIG.isSeasonMessingCrops()) {

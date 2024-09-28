@@ -5,6 +5,7 @@ import io.github.lucaargolo.seasonsextras.FabricSeasonsExtras;
 import io.github.lucaargolo.seasonsextras.block.GreenhouseGlassBlock;
 import io.github.lucaargolo.seasonsextras.client.screen.AirConditioningScreen;
 import io.github.lucaargolo.seasonsextras.patchouli.FabricSeasonsExtrasPatchouliCompatClient;
+import io.github.lucaargolo.seasonsextras.payload.SendTestedSeasonPacket;
 import io.github.lucaargolo.seasonsextras.utils.ModIdentifier;
 import io.github.lucaargolo.seasonsextras.utils.TooltipRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -36,21 +37,15 @@ public class FabricSeasonsExtrasClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(FabricSeasonsExtras.SEND_TESTED_SEASON_S2C, (client, handler, buf, responseSender) -> {
-            BlockPos receivedTestedPos = buf.readBlockPos();
-            List<Text> receivedTooltip = new ArrayList<>();
-            int size = buf.readInt();
-            for(int i = 0; i < size; i++) {
-                receivedTooltip.add(buf.readText());
-            }
-            client.execute(() -> {
-                testedPos = receivedTestedPos;
+        ClientPlayNetworking.registerGlobalReceiver(SendTestedSeasonPacket.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                testedPos = payload.testedPos();
                 testedTooltip.clear();
-                testedTooltip.addAll(receivedTooltip);
+                testedTooltip.addAll(payload.tooltip());
             });
         });
         
-        ModelPredicateProviderRegistry.register(FabricSeasonsExtras.SEASON_CALENDAR_ITEM, new Identifier("season"), (itemStack, clientWorld, livingEntity, seed) -> {
+        ModelPredicateProviderRegistry.register(FabricSeasonsExtras.SEASON_CALENDAR_ITEM, Identifier.ofVanilla("season"), (itemStack, clientWorld, livingEntity, seed) -> {
             Entity entity = livingEntity != null ? livingEntity : itemStack.getHolder();
             if (entity == null) {
                 return 0.0F;
@@ -66,7 +61,7 @@ public class FabricSeasonsExtrasClient implements ClientModInitializer {
             }
 
         });
-        ModelPredicateProviderRegistry.register(FabricSeasonsExtras.SEASON_CALENDAR_ITEM, new Identifier("progress"), (itemStack, clientWorld, livingEntity, seed) -> {
+        ModelPredicateProviderRegistry.register(FabricSeasonsExtras.SEASON_CALENDAR_ITEM, Identifier.ofVanilla("progress"), (itemStack, clientWorld, livingEntity, seed) -> {
             Entity entity = livingEntity != null ? livingEntity : itemStack.getHolder();
             if (entity == null) {
                 return 0.0F;
@@ -87,10 +82,10 @@ public class FabricSeasonsExtrasClient implements ClientModInitializer {
         for (GreenhouseGlassBlock block : FabricSeasonsExtras.GREENHOUSE_GLASS_BLOCKS) {
             BlockRenderLayerMap.INSTANCE.putBlock(block, RenderLayer.getTranslucent());
         }
-        BlockRenderLayerMap.INSTANCE.putBlock(Registries.BLOCK.get(new ModIdentifier("season_calendar")), RenderLayer.getCutout());
-        HudRenderCallback.EVENT.register(((drawContext, tickDelta) -> {
+        BlockRenderLayerMap.INSTANCE.putBlock(Registries.BLOCK.get(ModIdentifier.of("season_calendar")), RenderLayer.getCutout());
+        HudRenderCallback.EVENT.register(((drawContext, counter) -> {
             MinecraftClient client = MinecraftClient.getInstance();
-            TooltipRenderer.render(client, drawContext, tickDelta);
+            TooltipRenderer.render(client, drawContext, counter);
         }));
         FabricSeasonsExtrasPatchouliCompatClient.onInitializeClient();
     }

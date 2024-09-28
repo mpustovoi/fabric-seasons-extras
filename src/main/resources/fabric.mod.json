@@ -25,13 +25,17 @@
   },
   "accessWidener": "seasonsextras.accesswidener",
   "mixins": [
+    "seasonsextras.mixins.json",
     "seasonsextraspatchouli.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.8",
-    "fabric": ">=0.83.0",
-    "seasons": ">=2.2.1-BETA",
-    "minecraft": "1.20.x"
+    "fabric": ">=0.93.0",
+    "seasons": ">=2.4-BETA",
+    "minecraft": "1.21.x"
+  },
+  "suggests": {
+    "patchouli": ">=1.21"
   },
   "custom": {
     "modmenu": {

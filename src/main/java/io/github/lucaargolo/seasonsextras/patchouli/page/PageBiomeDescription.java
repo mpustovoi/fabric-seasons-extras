@@ -14,7 +14,7 @@ public class PageBiomeDescription extends PageText {
     @Override
     public void render(DrawContext graphics, int mouseX, int mouseY, float pticks) {
         super.render(graphics, mouseX, mouseY, pticks);
-        textRender.render(graphics, mouseX, mouseY);
+        textRender.render(graphics, mouseX, mouseY, pticks);
         int mx = mouseX-parent.bookLeft;
         int my = mouseY-parent.bookTop;
         graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+27f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);

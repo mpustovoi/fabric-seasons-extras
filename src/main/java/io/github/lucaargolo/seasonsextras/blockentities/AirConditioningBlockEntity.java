@@ -1,5 +1,6 @@
 package io.github.lucaargolo.seasonsextras.blockentities;
 
+import com.mojang.serialization.Codec;
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.utils.GreenhouseCache;
 import io.github.lucaargolo.seasons.utils.Season;
@@ -30,9 +31,11 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
@@ -129,14 +132,14 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
         nbt.putInt("progress", progress);
         NbtCompound inputInventoryNbt = new NbtCompound();
-        Inventories.writeNbt(inputInventoryNbt, inputInventory.stacks);
+        Inventories.writeNbt(inputInventoryNbt, inputInventory.heldStacks, registryLookup);
         nbt.put("inputInventory", inputInventoryNbt);
         NbtCompound moduleInventoryNbt = new NbtCompound();
-        Inventories.writeNbt(moduleInventoryNbt, moduleInventory.stacks);
+        Inventories.writeNbt(moduleInventoryNbt, moduleInventory.heldStacks, registryLookup);
         nbt.put("moduleInventory", moduleInventoryNbt);
         for (int i = 0; i < burnSlots.length; i++) {
             nbt.put("module_" + i, burnSlots[i].writeNbt(new NbtCompound()));
@@ -150,11 +153,11 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.readNbt(nbt, registryLookup);
         progress = nbt.getInt("progress");
-        Inventories.readNbt(nbt.getCompound("inputInventory"), inputInventory.stacks);
-        Inventories.readNbt(nbt.getCompound("moduleInventory"), moduleInventory.stacks);
+        Inventories.readNbt(nbt.getCompound("inputInventory"), inputInventory.heldStacks, registryLookup);
+        Inventories.readNbt(nbt.getCompound("moduleInventory"), moduleInventory.heldStacks, registryLookup);
         for (int i = 0; i < burnSlots.length; i++) {
             burnSlots[i].readNbt(nbt.getCompound("module_" + i));
         }
@@ -171,9 +174,9 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
     public Packet<ClientPlayPacketListener> toUpdatePacket() {
         return BlockEntityUpdateS2CPacket.create(this);
     }
-
+    
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
         NbtCompound nbt = new NbtCompound();
         this.writeClientNbt(nbt);
         return nbt;
@@ -436,9 +439,9 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
         }
     }
 
-    public enum Conditioning {
+    public enum Conditioning implements StringIdentifiable {
 
-        HEATER(new ModIdentifier("textures/gui/heater.png"), stack -> {
+        HEATER(ModIdentifier.of("textures/gui/heater.png"), stack -> {
             Integer fuel = FuelRegistry.INSTANCE.get(stack.getItem());
             if(fuel != null) {
                 return fuel*3;
@@ -451,7 +454,7 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
             else if(level == 1 && current == Season.WINTER) return Season.FALL;
             else return Season.SUMMER;
         }, ParticleTypes.FLAME),
-        CHILLER(new ModIdentifier("textures/gui/chiller.png"), stack -> {
+        CHILLER(ModIdentifier.of("textures/gui/chiller.png"), stack -> {
             if(stack.isOf(Items.POWDER_SNOW_BUCKET)) return 20*30;
             else if(stack.isOf(Items.SNOW_BLOCK)) return 20*30;
             if(stack.isOf(Items.PACKED_ICE)) return 360*30;
@@ -466,6 +469,8 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
             else if(level == 1 && current == Season.SUMMER) return Season.SPRING;
             else return Season.WINTER;
         }, ParticleTypes.SNOWFLAKE);
+
+        public static final Codec<Conditioning> CODEC = StringIdentifiable.createCodec(Conditioning::values);
 
         private final Identifier texture;
         private final Function<ItemStack, Integer> fuel;
@@ -489,13 +494,11 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
             return texture;
         }
 
-        @SuppressWarnings("UnstableApiUsage")
         public int getFuel(ItemVariant variant) {
             Integer fuelTime = fuel.apply(variant.toStack());
             return fuelTime != null ? fuelTime : 0;
         }
 
-        @SuppressWarnings("UnstableApiUsage")
         public Predicate<ItemVariant> getFilter() {
             return variant -> {
                 Integer fuelTime = fuel.apply(variant.toStack());
@@ -506,6 +509,12 @@ public class AirConditioningBlockEntity extends BlockEntity implements Inventory
         public ParticleEffect getParticle() {
             return particle;
         }
+
+        @Override
+        public String asString() {
+            return name().toLowerCase();
+        }
+
     }
 
 }
