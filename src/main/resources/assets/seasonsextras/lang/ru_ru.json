@@ -1,7 +1,9 @@
 {
 	"itemGroup.seasonsextras.creative_tab": "Fabric Seasons: дополнения",
+	
 	"item.seasonsextras.seasonal_compendium": "Сезонный сборник",
 	"item.seasonsextras.crop_season_tester": "Тестер сезона сбора урожая",
+	
 	"block.seasonsextras.season_calendar": "Календарь сезонов",
 	"block.seasonsextras.season_detector": "Датчик времени года",
 	"block.seasonsextras.black_greenhouse_glass": "Чёрное тепличное стекло",
@@ -23,6 +25,7 @@
 	"block.seasonsextras.tinted_greenhouse_glass": "Тонированное тепличное стекло",
 	"block.seasonsextras.heater": "Подогреватель урожая",
 	"block.seasonsextras.chiller": "Охладитель урожая",
+	
 	"tooltip.seasonsextras.calendar_info_1": "Осталось ",
 	"tooltip.seasonsextras.calendar_info_2": " дней до ",
 	"tooltip.seasonsextras.crop_tester_1": "Показывает, какой сезон действует на тестируемой",
@@ -37,6 +40,7 @@
 	"tooltip.seasonsextras.chiller_2": "культурам расти вне сезона. Использует замороженное топливо.",
 	"tooltip.seasonsextras.detector_1": "Выдает сигнал редстоуна, если мировое время года",
 	"tooltip.seasonsextras.detector_2": "совпадает с настроенным временем года детектора.",
+	
 	"tooltip.seasonsextras.tester_result_disabled_1": "Культуры, посаженные на этом блоке,",
 	"tooltip.seasonsextras.tester_result_disabled_2": "будут расти с обычной скоростью.",
 	"tooltip.seasonsextras.tester_result_enabled_1": "Культуры, посаженные на этом блоке,",
@@ -44,6 +48,7 @@
 	"tooltip.seasonsextras.tester_result_crop_1": "Этот урожай будет расти на %sx",
 	"tooltip.seasonsextras.tester_result_crop_2": "от своей обычной скорости (%s)",
 	"tooltip.seasonsextras.not_enabled": "Эта функция не включена.",
+	
 	"screen.seasonsextras.enable_particles": "Включить частицы",
 	"screen.seasonsextras.disable_particles": "Отключить частицы",
 	"screen.seasonsextras.open_valve": "Открыть клапан",
@@ -52,6 +57,7 @@
 	"screen.seasonsextras.level_description": "%s находится на уровне %s",
 	"screen.seasonsextras.burn_description": "Сжигаемый слот %s: %s",
 	"screen.seasonsextras.time_left": "%s осталось",
+	
 	"patchouli.seasonsextras.description": "Лучший друг путешественника по биомам.",
 	"patchouli.seasonsextras.entries": "Записи",
 	"patchouli.seasonsextras.biomes": "Биомы",
@@ -82,9 +88,9 @@
 	"patchouli.seasonsextras.crop": "культура",
 	"patchouli.seasonsextras.growsfasterduringthese": "В эти сезоны растёт быстрее.",
 	"patchouli.seasonsextras.growsfasterduringthis": "В этот сезоны растёт быстрее.",
-	"patchouli.seasonsextras.fastergrowduring": "Растет быстрее во время",
-	"patchouli.seasonsextras.normalgrowduring": "Растет нормально во время",
-	"patchouli.seasonsextras.slowedgrowduring": "Растет медленнее во время",
+	"patchouli.seasonsextras.fastergrowduring": "Растёт быстрее во время",
+	"patchouli.seasonsextras.normalgrowduring": "Растёт нормально во время",
+	"patchouli.seasonsextras.slowedgrowduring": "Растёт медленнее во время",
 	"patchouli.seasonsextras.notgrowduring": "Не будет расти во время",
 	"patchouli.seasonsextras.multiplier": "Множитель",
 	"patchouli.seasonsextras.greenhouse_glass": "Тепличное стекло",
@@ -94,6 +100,7 @@
 	"patchouli.seasonsextras.resources_info": "Блоки и предметы, которые помогут вам.",
 	"patchouli.seasonsextras.all_seasons": "все сезоны.",
 	"patchouli.seasonsextras.recipe": "Рецепт",
+
 	"patchouli.seasonsextras.landing_text": "This is a $(#579A20)complete guide$() about the $(#579A20)seasonal changes$() added by the $(#579A20)Fabric Seasons$() mod.$(br2)You'll find information on how seasons affect your game's $(#579A20)biomes$() and $(#579A20)crop behavior$() throughout the year.$(br2)You'll also find all the new $(#579A20)blocks and items$() added by the mod and how you can use them.",
 	"patchouli.seasonsextras.crops_text": "Crops are Minecraft $(#579A20)plants$() that are $(#579A20)cultivated$() for food, resource, or other purposes.$(br2)$(#579A20)Fabric Seasons$() adds seasons to the game, adding more $(#579A20)realism$() to crop growth.$(br2)Crops will grow at $(#579A20)different speeds$() depending on the $(#579A20)current season$().",
 	"patchouli.seasonsextras.biomes_text": "Biomes are $(#579A20)areas$() of Minecraft worlds that have similar $(#579A20)climates$(), flora and fauna.$(br2)$(#579A20)Fabric Seasons$() adds seasons to the game, dynamically changing $(#579A20)biomes$() as you play.$(br2)Biomes will have different $(#579A20)temperatures$() and $(#579A20)weather$() depending on the $(#579A20)current season$().",
