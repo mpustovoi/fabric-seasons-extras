@@ -20,7 +20,8 @@ public class PageBiomeDescription extends PageText {
         graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+27f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
         if(mx > -28 && mx < -28+13 && my > 0 && my < 10) {
             graphics.drawTexture(parent.getBookTexture(), -28, 0, 352f+14f, FabricSeasonsExtrasClient.prefersCelsius ? 56f : 66f, 13, 10, 512, 256);
-            parent.setTooltip(FabricSeasonsExtrasClient.prefersCelsius ? Text.translatable("patchouli.seasonsextras.changetofahrenheit") : Text.translatable("patchouli.seasonsextras.changetocelsius"));
+            Text tooltip = FabricSeasonsExtrasClient.prefersCelsius ? Text.translatable("patchouli.seasonsextras.changetofahrenheit") : Text.translatable("patchouli.seasonsextras.changetocelsius");
+            graphics.drawTooltip(fontRenderer, tooltip, mx, my);
         }
     }
 

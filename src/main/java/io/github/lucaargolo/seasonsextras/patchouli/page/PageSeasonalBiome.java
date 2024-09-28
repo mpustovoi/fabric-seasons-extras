@@ -74,13 +74,13 @@ public class PageSeasonalBiome extends PageMultiblock implements Tickable {
         int mx = mouseX-parent.bookLeft;
         int my = mouseY-parent.bookTop;
         if(mx > 6 && mx < 6+23 && my > 115 && my < 115+23) {
-            parent.setTooltip(Text.translatable(Season.SPRING.getTranslationKey()).formatted(Season.SPRING.getFormatting()));
+            graphics.drawTooltip(fontRenderer, Text.translatable(Season.SPRING.getTranslationKey()).formatted(Season.SPRING.getFormatting()), mx, my);
         }else if(mx > 33 && mx < 33+23 && my > 115 && my < 115+23) {
-            parent.setTooltip(Text.translatable(Season.SUMMER.getTranslationKey()).formatted(Season.SUMMER.getFormatting()));
+            graphics.drawTooltip(fontRenderer, Text.translatable(Season.SUMMER.getTranslationKey()).formatted(Season.SUMMER.getFormatting()), mx, my);
         }else if(mx > 60 && mx < 60+23 && my > 115 && my < 115+23) {
-            parent.setTooltip(Text.translatable(Season.FALL.getTranslationKey()).formatted(Season.FALL.getFormatting()));
+            graphics.drawTooltip(fontRenderer, Text.translatable(Season.FALL.getTranslationKey()).formatted(Season.FALL.getFormatting()), mx, my);
         }else if(mx > 87 && mx < 87+23 && my > 115 && my < 115+23) {
-            parent.setTooltip(Text.translatable(Season.WINTER.getTranslationKey()).formatted(Season.WINTER.getFormatting()));
+            graphics.drawTooltip(fontRenderer, Text.translatable(Season.WINTER.getTranslationKey()).formatted(Season.WINTER.getFormatting()), mx, my);
         }
 
     }
