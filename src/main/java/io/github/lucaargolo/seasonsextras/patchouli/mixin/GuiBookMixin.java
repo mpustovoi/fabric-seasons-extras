@@ -13,7 +13,7 @@ import vazkii.patchouli.client.book.gui.GuiBook;
 
 import java.util.Iterator;
 
-@Mixin(value = GuiBook.class, remap = false)
+@Mixin(value = GuiBook.class)
 public abstract class GuiBookMixin extends Screen {
 
     protected GuiBookMixin(Text title) {
